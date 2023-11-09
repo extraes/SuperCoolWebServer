@@ -1,0 +1,9 @@
+logPath = "./logs/"
+gifsiclePath = "./gifsicle/"
+quoteFont = "Comfortaa"
+blockedUsers = [ ]
+owners = [ ]
+requiredRoles = [ ]
+requiredEmojis = [ ]
+outputChannel = 0
+maxLogFiles = 5
