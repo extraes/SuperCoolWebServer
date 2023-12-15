@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
 using System.Linq;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using Tomlet;
@@ -16,17 +17,25 @@ internal class Config
     public static Config values;
     private const string CFG_PATH = "./config.toml";
     public string logPath = "./logs/";
-    public string gifsiclePath = "./gifsicle/";
 
-    public string quoteFont = "Comfortaa";
+    static readonly HashAlgorithm hasher = SHA256.Create();
 
-    public ulong[] blockedUsers = Array.Empty<ulong>();
-    public ulong[] owners = Array.Empty<ulong>();
-    public ulong[] requiredRoles = Array.Empty<ulong>();
-    public ulong[] requiredEmojis = Array.Empty<ulong>();
-    public ulong outputChannel = 0;
     public int maxLogFiles = 5;
-    
+
+    public string cloudflareKey = "";
+    public string cloudflareZoneId = "";
+    public string cloudflareDnsEntryName = "extraes.xyz";
+    //public int cloudflareDdnsIntervalHours = 6;
+
+    // Filestorage
+    public string filestoreDir = "./filestore/";
+    public string filestoreAuth = "REPLACEME";
+
+    // Link
+    public string redirectAuth = "REPLACEME";
+
+    // IP Access
+    public string ipAccessAuth = "REPLACEME";
 
     static Config()
     {
@@ -56,5 +65,15 @@ internal class Config
     {
         File.WriteAllText(CFG_PATH, TomletMain.TomlStringFrom(values));
         ConfigChanged?.Invoke();
+    }
+
+    // https://stackoverflow.com/questions/8820399/c-sharp-4-0-how-to-get-64-bit-hash-code-of-given-string
+    public static long Hash(string str)
+    {
+        var bytes = hasher.ComputeHash(Encoding.Default.GetBytes(str));
+        Array.Resize(ref bytes, bytes.Length + bytes.Length % 8); //make multiple of 8 if hash is not, for exampel SHA1 creates 20 bytes. 
+        return Enumerable.Range(0, bytes.Length / 8) // create a counter for de number of 8 bytes in the bytearray
+            .Select(i => BitConverter.ToInt64(bytes, i * 8)) // combine 8 bytes at a time into a integer
+            .Aggregate((x, y) => x ^ y); //xor the bytes together so you end up with a long (64-bit int)
     }
 }

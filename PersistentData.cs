@@ -16,8 +16,9 @@ internal class PersistentData
     public static PersistentData values;
     private const string PD_PATH = "./persistentData.json";
 
-    public Dictionary<ulong, TimeSpan> frogRoleTimes = new();
-    public DateTime lastSwitchTime = DateTime.Now;
+    public Dictionary<string, string> links = new();
+    public Dictionary<string, long> applicationAuth = new();
+    public Dictionary<string, long[]> applicationAccessedIpHashes = new();
 
     static PersistentData()
     {
@@ -43,13 +44,13 @@ internal class PersistentData
     {
         string configText = File.ReadAllText(PD_PATH);
         values = JsonConvert.DeserializeObject<PersistentData>(configText) ?? new PersistentData();
-        Logger.Put($"Read {values.frogRoleTimes.Count} frog role times from disk.", LogType.Debug);
+        Logger.Put($"Read persistent data from disk.", LogType.Debug);
 
     }
 
     public static void WritePersistentData()
     {
-        Logger.Put($"Writing {values.frogRoleTimes.Count} frog role times to disk.", LogType.Debug);
+        Logger.Put($"Writing persistent data to disk.", LogType.Debug);
         File.WriteAllText(PD_PATH, JsonConvert.SerializeObject(values));
         PersistentDataChanged?.Invoke();
     }
