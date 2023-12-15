@@ -11,11 +11,17 @@ public class GifsicleController : Controller
     static readonly string baseDir = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)!;
     GifsicleService gifsicle = new(Path.GetFullPath(gifsiclePath, baseDir));
 
+    const int MB_SIZE = 1024 * 1024;
+
     [HttpPost]
     [ActionName("optimizeBlocking")]
     [Consumes("image/gif")]
+    [RequestSizeLimit(100 * MB_SIZE)]
     public async Task<IActionResult> Optimize([FromBody] Stream gifFile, int level)
     {
+        if (gifFile is null)
+            return BadRequest();
+
         level = Math.Clamp(level, 35, 200);
         string filePath = Path.GetTempFileName();
         using (FileStream fs = System.IO.File.OpenWrite(filePath))
