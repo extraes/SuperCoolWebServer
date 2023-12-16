@@ -38,7 +38,7 @@ namespace SuperCoolWebServer
                 {
                     opt.PermitLimit = 4;
                     opt.Window = TimeSpan.FromSeconds(10);
-                    opt.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst,
+                    opt.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
                     opt.QueueLimit = 2;
                 });
             });
