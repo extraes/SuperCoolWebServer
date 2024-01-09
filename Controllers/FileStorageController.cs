@@ -42,6 +42,11 @@ public class FileStorageController : Controller
     [ActionName("dl")]
     public async Task<IActionResult> Download(string file)
     {
+        if (!Request.Headers.TryGetValue("cf-connecting-ip", out var ip))
+            ip = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+
+        Logger.Put($"IP {ip} requested file {file}", LogType.Debug);
+
         if (string.IsNullOrEmpty(file) || file.Any(c => c == '/' || c == '\\'))
             return BadRequest();
 
@@ -79,6 +84,9 @@ public class FileStorageController : Controller
     [RequestSizeLimit(1024 * MB_SIZE)]
     public async Task<IActionResult> Upload([FromBody] Stream fileStream, string file, string auth, bool overwrite = false)
     {
+        if (!Request.Headers.TryGetValue("cf-connecting-ip", out var ip))
+            ip = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+
         if (Config.values.filestoreAuth != auth)
             return Unauthorized();
 
@@ -91,9 +99,13 @@ public class FileStorageController : Controller
         if (System.IO.File.Exists(path) && !overwrite)
             return StatusCode(409);
 
+        Logger.Put($"IP {ip} is uploading file {file}", LogType.Debug);
+
         using FileStream fs = System.IO.File.Create(path);
         
         await fileStream.CopyToAsync(fs);
+
+        Logger.Put($"IP {ip} uploaded {file} that is {fs.Length / 1024} KB long", LogType.Debug);
 
         string url = Request.GetDisplayUrl().Split('?')[0];
 
