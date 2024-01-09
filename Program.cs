@@ -46,11 +46,11 @@ namespace SuperCoolWebServer
             var app = builder.Build();
 
             // Configure the HTTP request pipeline.
-            if (app.Environment.IsDevelopment())
-            {
-                app.UseSwagger();
-                app.UseSwaggerUI();
-            }
+            //if (app.Environment.IsDevelopment())
+            //{
+            app.UseSwagger();
+            app.UseSwaggerUI();
+            //}
 
             app.UseHttpsRedirection();
 
@@ -58,8 +58,7 @@ namespace SuperCoolWebServer
 
             app.MapControllers();
 
-            //app.Run("http://" + myIp + ":9009/");
-            app.Run("http://192.168.86.26:9009/");
+            app.Run(Config.values.listenOn);
         }
 
         static void SetCloudflareIp()

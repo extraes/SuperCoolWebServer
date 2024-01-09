@@ -22,9 +22,10 @@ internal class Config
 
     public int maxLogFiles = 5;
 
+    public string listenOn = "http://127.0.0.1:9009/";
     public string cloudflareKey = "";
     public string cloudflareZoneId = "";
-    public string cloudflareDnsEntryName = "extraes.xyz";
+    public string cloudflareDnsEntryName = "";
     //public int cloudflareDdnsIntervalHours = 6;
 
     // Filestorage
