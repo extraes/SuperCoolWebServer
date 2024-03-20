@@ -38,6 +38,11 @@ internal class Config
     // IP Access
     public string ipAccessAuth = "REPLACEME";
 
+    // auto-cobalt
+    internal string defualtCobaltApi = "co.wuk.sh";
+    [TomlInlineComment("Set if you want a local cobalt instance to be ran with SCWS")]
+    internal string? cobaltPath = null;
+
     static Config()
     {
         Console.WriteLine("Initializing config");
