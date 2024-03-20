@@ -23,7 +23,7 @@ public class CobaltController : Controller
 
     [HttpGet]
     [ActionName("get")]
-    public async Task<IActionResult> DownloadLinkContents(string link, string? useCobaltApiLink = null)
+    public async Task<IActionResult> DownloadLinkContents(string link, bool mp4Gif = false, string? useCobaltApiLink = null)
     {
         if (string.IsNullOrEmpty(link))
             return BadRequest();
@@ -37,7 +37,7 @@ public class CobaltController : Controller
             CobaltRequest req = new()
             {
                 Url = link,
-                TwitterGif = true,
+                TwitterGif = !mp4Gif,
             };
 
             HttpRequestMessage httpReq = new(HttpMethod.Post, $"https://{useCobaltApiLink}/api/json");
@@ -59,7 +59,10 @@ public class CobaltController : Controller
                 return StatusCode(500, "Cobalt API returned an empty response");
 
             Stream retStream = await Client.GetStreamAsync(cobaltRes.Url);
-            return File(retStream, "application/octet-stream", Path.GetFileName(cobaltRes.Url).Split('?')[0]);
+            string filename = Path.GetFileName(cobaltRes.Url).Split('?')[0];
+            if (filename == "stream")
+                filename = "twittergif.gif";
+            return File(retStream, "application/octet-stream", filename);
         }
         catch (Exception ex)
         {
