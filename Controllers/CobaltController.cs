@@ -59,9 +59,18 @@ public class CobaltController : Controller
                 return StatusCode(500, "Cobalt API returned an empty response");
 
             Stream retStream = await Client.GetStreamAsync(cobaltRes.Url);
+            Logger.Put("Proxying download from " + cobaltRes.Url);
             string filename = Path.GetFileName(cobaltRes.Url).Split('?')[0];
+            bool isTwitter = link.Contains("twitter.com") || link.Contains("x.com");
             if (filename == "stream")
-                filename = "twittergif.gif";
+            {
+                if (isTwitter)
+                    filename = "twittergif.gif";
+                else if (link.Contains("youtu"))
+                    filename = "youtube.mp4";
+                else
+                    filename = "video.mp4";
+            }
             return File(retStream, "application/octet-stream", filename);
         }
         catch (Exception ex)
