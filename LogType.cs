@@ -23,8 +23,8 @@ internal struct LogType
         name = "Debug",
         logCaller = true,
         writeToFile = true,
-        nameColor = ConsoleColor.Gray,
-        textColor = ConsoleColor.DarkGray
+        nameColor = ConsoleColor.White,
+        textColor = ConsoleColor.Gray
     };
     public static readonly LogType Trace = new()
     {
