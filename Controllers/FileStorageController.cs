@@ -132,6 +132,7 @@ public partial class FileStorageController : Controller
             newUrl += $"?{nameof(redirDisc)}=false";
 
         string discordHtml = string.Format(DiscordFormat.LARGE_VIDEO_FORMAT, thumbUrl, newUrl, width, height);
+        Response.Headers.Add("Content-Type", "text/html");
 
         return Ok(discordHtml);
     }
