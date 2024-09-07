@@ -34,7 +34,6 @@ public class FileStorageController : Controller
         FileInfo finf = new(Path.Combine(Directory, file));
         if (!finf.Exists) return NotFound();
 
-
         return Ok();
     }
 
@@ -53,12 +52,6 @@ public class FileStorageController : Controller
         FileInfo finf = new(Path.Combine(Directory, file));
         if (!finf.Exists) return NotFound();
 
-        if (!cachedFiles.TryGetValue(file, out byte[]? bytes))
-        {
-            bytes = await System.IO.File.ReadAllBytesAsync(finf.FullName);
-            cachedFiles.Add(file, bytes);
-        }
-
         string mime = Path.GetExtension(file) switch
         {
             ".png" => "image/png",
@@ -72,10 +65,22 @@ public class FileStorageController : Controller
             ".gif" => "image/gif",
             ".mp4" => "video/mp4",
             ".webm" => "video/webm",
+            ".mkv" => "video/x-matroska",
             _ => "application/octet-stream",
         };
 
-        return File(bytes, mime);
+        if (finf.Length > 20 * MB_SIZE) // dont cache files larger than 20mb
+        {
+            if (!cachedFiles.TryGetValue(file, out byte[]? bytes))
+            {
+                bytes = await System.IO.File.ReadAllBytesAsync(finf.FullName);
+                cachedFiles.Add(file, bytes);
+            }
+
+            return File(bytes, mime);
+        }
+        
+        return PhysicalFile(finf.FullName, mime);
     }
 
     [HttpPut]
@@ -86,7 +91,7 @@ public class FileStorageController : Controller
     {
         if (!Request.Headers.TryGetValue("cf-connecting-ip", out var ip))
             ip = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
-
+        
         if (Config.values.filestoreAuth != auth)
             return Unauthorized();
 
