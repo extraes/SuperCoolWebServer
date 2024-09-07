@@ -2,11 +2,11 @@
 
 internal static class DiscordFormat
 {
-    //                 <meta property="og:image" content="{0}">
     public const string LARGE_VIDEO_FORMAT = """
         <!DOCTYPE html>
         <html lang="en">
             <head>
+                <meta property="og:image" content="{0}">
                 <meta property="og:type" content="video.other">
                 <meta property="og:video:url" content="{1}">
                 <meta property="og:video:secure_url" content="{1}">
