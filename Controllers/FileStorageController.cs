@@ -77,10 +77,10 @@ public class FileStorageController : Controller
                 cachedFiles.Add(file, bytes);
             }
 
-            return File(bytes, mime);
+            return File(bytes, mime/*, finf.Name*/);
         }
         
-        return PhysicalFile(finf.FullName, mime);
+        return PhysicalFile(finf.FullName, mime, true);
     }
 
     [HttpPut]
