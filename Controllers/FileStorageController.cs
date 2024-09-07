@@ -69,7 +69,7 @@ public class FileStorageController : Controller
             _ => "application/octet-stream",
         };
 
-        if (finf.Length > 20 * MB_SIZE) // dont cache files larger than 20mb
+        if (finf.Length < 20 * MB_SIZE) // dont cache files larger than 20mb
         {
             if (!cachedFiles.TryGetValue(file, out byte[]? bytes))
             {
