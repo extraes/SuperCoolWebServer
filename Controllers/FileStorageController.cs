@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Http.Extensions;
+﻿using Microsoft.AspNetCore.Html;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
@@ -132,9 +133,9 @@ public partial class FileStorageController : Controller
             newUrl += $"?{nameof(redirDisc)}=false";
 
         string discordHtml = string.Format(DiscordFormat.LARGE_VIDEO_FORMAT, thumbUrl, newUrl, width, height);
-        Response.Headers.Add("Content-Type", "text/html");
-
-        return Ok(discordHtml);
+        //Response.ContentType = "text/html";
+        
+        return Ok(new HtmlString(discordHtml));
     }
 
     [HttpPut]
