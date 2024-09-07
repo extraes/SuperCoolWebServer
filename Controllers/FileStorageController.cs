@@ -134,8 +134,8 @@ public partial class FileStorageController : Controller
 
         string discordHtml = string.Format(DiscordFormat.LARGE_VIDEO_FORMAT, thumbUrl, newUrl, width, height);
         //Response.ContentType = "text/html";
-        
-        return Ok(new HtmlString(discordHtml));
+
+        return Content(discordHtml, "text/html");
     }
 
     [HttpPut]
