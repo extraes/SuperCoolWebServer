@@ -1,13 +1,15 @@
 ﻿using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System.Runtime.CompilerServices;
+using System.Text.RegularExpressions;
 using Xabe.FFmpeg;
 
 namespace SuperCoolWebServer.Controllers;
 
 [Route("api/files/[action]/{file}")]
-public class FileStorageController : Controller
+public partial class FileStorageController : Controller
 {
+    static readonly Regex portRegex = PortRegex();
     const int MB_SIZE = 1024 * 1024;
     static string Directory => Path.GetFullPath(Config.values.filestoreDir);
     static ConditionalWeakTable<string, byte[]> cachedFiles = new();
@@ -111,9 +113,11 @@ public class FileStorageController : Controller
 
         string thumbName = finf.Name.Replace(finf.Extension, ".jpg");
         string thumbFullName = finf.FullName.Replace(finf.Extension, ".jpg");
-        string thumbUrl = System.IO.File.Exists(thumbFullName) ? Request.GetDisplayUrl().Replace(file, thumbName) : Config.values.filestoreDefaultThumbnail;
+        string displayUrl = portRegex.Replace(Request.GetDisplayUrl(), "");
+        string thumbUrl = System.IO.File.Exists(thumbFullName) ? displayUrl.Replace(file, thumbName) : Config.values.filestoreDefaultThumbnail;
 
-        string newUrl = Request.GetEncodedUrl();
+        
+        string newUrl = displayUrl;
         // theres almost certainly a better way to do this but i dont care
         if (newUrl.Contains(nameof(redirDisc)))
             newUrl = newUrl.Replace($"{nameof(redirDisc)}=false", $"{nameof(redirDisc)}=true");
@@ -121,8 +125,6 @@ public class FileStorageController : Controller
             newUrl += $"&{nameof(redirDisc)}=false";
         else
             newUrl += $"?{nameof(redirDisc)}=false";
-
-
 
         string discordHtml = string.Format(DiscordFormat.LARGE_VIDEO_FORMAT, thumbUrl, newUrl, width, height);
 
@@ -159,7 +161,11 @@ public class FileStorageController : Controller
         Logger.Put($"IP {ip} uploaded {file} that is {fs.Length / 1024} KB long", LogType.Debug);
 
         string url = Request.GetDisplayUrl().Split('?')[0];
+        url = portRegex.Replace(url, "");
 
         return Created(url.Replace("upload", "dl"), null);
     }
+
+    [GeneratedRegex("\\:\\d{1,5}/")]
+    private static partial Regex PortRegex();
 }
