@@ -111,6 +111,11 @@ public partial class FileStorageController : Controller
             Logger.Warn($"Exception while probing file {file} for {ip} - {ex}");
         }
 
+        foreach (var item in Request.Headers)
+        {
+            Logger.Put($"{item.Key}: {item.Value}", LogType.Debug);
+        }
+
         string thumbName = finf.Name.Replace(finf.Extension, ".jpg");
         string thumbFullName = finf.FullName.Replace(finf.Extension, ".jpg");
         string displayUrl = portRegex.Replace(Request.GetDisplayUrl(), "");
@@ -166,6 +171,6 @@ public partial class FileStorageController : Controller
         return Created(url.Replace("upload", "dl"), null);
     }
 
-    [GeneratedRegex("\\:\\d{1,5}/")]
+    [GeneratedRegex("\\:\\d{1,5}")]
     private static partial Regex PortRegex();
 }
