@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using System.Runtime.CompilerServices;
+using Xabe.FFmpeg;
 
 namespace SuperCoolWebServer.Controllers;
 
@@ -10,6 +11,7 @@ public class FileStorageController : Controller
     const int MB_SIZE = 1024 * 1024;
     static string Directory => Path.GetFullPath(Config.values.filestoreDir);
     static ConditionalWeakTable<string, byte[]> cachedFiles = new();
+    static ConditionalWeakTable<string, IMediaInfo> cachedProbes = new();
 
     static void EnsureDirectory()
     {
@@ -39,10 +41,11 @@ public class FileStorageController : Controller
 
     [HttpGet]
     [ActionName("dl")]
-    public async Task<IActionResult> Download(string file)
+    public async Task<IActionResult> Download(string file, bool redirDisc = true)
     {
         if (!Request.Headers.TryGetValue("cf-connecting-ip", out var ip))
             ip = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
+        bool isDiscord = Request.Headers.TryGetValue("User-Agent", out var ua) && ua.ToString().Contains("Discord");
 
         Logger.Put($"IP {ip} requested file {file}", LogType.Debug);
 
@@ -69,6 +72,7 @@ public class FileStorageController : Controller
             _ => "application/octet-stream",
         };
 
+        // dont need to redirect discord because it previews <100mb files just fine normally
         if (finf.Length < 20 * MB_SIZE) // dont cache files larger than 20mb
         {
             if (!cachedFiles.TryGetValue(file, out byte[]? bytes))
@@ -79,8 +83,50 @@ public class FileStorageController : Controller
 
             return File(bytes, mime/*, finf.Name*/);
         }
-        
-        return PhysicalFile(finf.FullName, mime, true);
+
+        if (!mime.Contains("video") || !isDiscord || !redirDisc)
+            return PhysicalFile(finf.FullName, mime, true);
+
+        int width = 426;
+        int height = 240;
+        try
+        {
+            if (!cachedProbes.TryGetValue(file, out IMediaInfo? info))
+            {
+                info = await FFmpeg.GetMediaInfo(finf.FullName);
+                cachedProbes.Add(file, info);
+            }
+
+            var vidStream = info.VideoStreams.FirstOrDefault();
+            if (vidStream is not null)
+            {
+                width = vidStream.Width;
+                height = vidStream.Height;
+            }
+        }
+        catch (Exception ex)
+        {
+            Logger.Warn($"Exception while probing file {file} for {ip} - {ex}");
+        }
+
+        string thumbName = finf.Name.Replace(finf.Extension, ".jpg");
+        string thumbFullName = finf.FullName.Replace(finf.Extension, ".jpg");
+        string thumbUrl = System.IO.File.Exists(thumbFullName) ? Request.GetDisplayUrl().Replace(file, thumbName) : Config.values.filestoreDefaultThumbnail;
+
+        string newUrl = Request.GetEncodedUrl();
+        // theres almost certainly a better way to do this but i dont care
+        if (newUrl.Contains(nameof(redirDisc)))
+            newUrl = newUrl.Replace($"{nameof(redirDisc)}=false", $"{nameof(redirDisc)}=true");
+        else if (newUrl.Contains('?'))
+            newUrl += $"&{nameof(redirDisc)}=false";
+        else
+            newUrl += $"?{nameof(redirDisc)}=false";
+
+
+
+        string discordHtml = string.Format(DiscordFormat.LARGE_VIDEO_FORMAT, thumbUrl, newUrl, width, height);
+
+        return Ok(discordHtml);
     }
 
     [HttpPut]
