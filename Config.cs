@@ -31,6 +31,7 @@ internal class Config
     // Filestorage
     public string filestoreDir = "./filestore/";
     public string filestoreAuth = "REPLACEME";
+    public string filestoreDefaultThumbnail = "REPLACEME"; // https://upload.wikimedia.org/wikipedia/en/1/1e/SNES_Plok_cover_art.png
 
     // Link
     public string redirectAuth = "REPLACEME";
