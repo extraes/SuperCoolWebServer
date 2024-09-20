@@ -1,7 +1,10 @@
 ﻿using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
 using SuperCoolWebServer.Cobalt;
+using System.Diagnostics;
 using System.Net.Http.Headers;
+using System.Web;
 
 namespace SuperCoolWebServer.Controllers;
 
@@ -23,15 +26,19 @@ public class CobaltController : Controller
 
     [HttpGet]
     [ActionName("get")]
-    public async Task<IActionResult> DownloadLinkContents(string link, bool mp4Gif = false, string? useCobaltApiLink = null)
+    public async Task<IActionResult> DownloadLinkContents(string link, bool mp4Gif = false, string? useCobaltApiLink = null, bool instagramFallback = true)
     {
         if (string.IsNullOrEmpty(link))
             return BadRequest();
 
+        if (instagramFallback && link.Contains("instagram.com", StringComparison.InvariantCultureIgnoreCase))
+            return await DownloadInstagramContents(link);
+            
+
         useCobaltApiLink ??= Config.values.defualtCobaltApi;
         useCobaltApiLink = useCobaltApiLink.TrimEnd('/').Replace("https://", "").Replace("http://", "");
 
-        int status = 400;
+        int status = StatusCodes.Status500InternalServerError;
         try
         {
             CobaltRequest req = new()
@@ -75,6 +82,33 @@ public class CobaltController : Controller
         }
         catch (Exception ex)
         {
+            return StatusCode(status, ex.Message);
+        }
+    }
+
+    private async Task<IActionResult> DownloadInstagramContents(string link)
+    {
+
+        int status = StatusCodes.Status500InternalServerError;
+        try
+        {
+            // let ddinstagram handle the private api fuckshit for me lol
+            HttpRequestMessage httpReq = new(HttpMethod.Get, link.Replace("www.instagram.com", "d.ddinstagram.com"));
+            httpReq.Headers.Add("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:130.0) Gecko/20100101 Firefox/130.0 discord");
+            HttpResponseMessage res = await Client.SendAsync(httpReq); // follows redirect to instagram
+            
+            if (!res.IsSuccessStatusCode)
+                return StatusCode((int)res.StatusCode, "DDInstagram/Instagram returned a failure response - " + await res.Content.ReadAsStringAsync());
+
+            string fileName = res.RequestMessage?.RequestUri is not null ? Path.GetFileName(res.RequestMessage.RequestUri.ToString()).Split('?')[0] : "instagramvideo.mp4";
+            Logger.Put("Proxying download from DDInstagram. Stock link: " + link);
+            Stream retStream = await res.Content.ReadAsStreamAsync();
+            return File(retStream, "application/octet-stream", fileName);
+        }
+        catch (Exception ex)
+        {
+            if (Debugger.IsAttached)
+                throw;
             return StatusCode(status, ex.Message);
         }
     }

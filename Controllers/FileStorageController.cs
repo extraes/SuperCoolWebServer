@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.WebUtilities;
 using System.Runtime.CompilerServices;
 using System.Text.RegularExpressions;
+using System.Web;
 using Xabe.FFmpeg;
 
 namespace SuperCoolWebServer.Controllers;
@@ -90,6 +92,7 @@ public partial class FileStorageController : Controller
         if (!mime.Contains("video") || !isDiscord || !redirDisc)
             return PhysicalFile(finf.FullName, mime, true);
 
+        // default 16 by 9
         int width = 426;
         int height = 240;
         try
@@ -122,15 +125,20 @@ public partial class FileStorageController : Controller
         string displayUrl = portRegex.Replace(Request.GetDisplayUrl(), "");
         string thumbUrl = System.IO.File.Exists(thumbFullName) ? displayUrl.Replace(file, thumbName) : Config.values.filestoreDefaultThumbnail;
 
-        
-        string newUrl = displayUrl;
-        // theres almost certainly a better way to do this but i dont care
-        if (newUrl.Contains(nameof(redirDisc)))
-            newUrl = newUrl.Replace($"{nameof(redirDisc)}=false", $"{nameof(redirDisc)}=true");
-        else if (newUrl.Contains('?'))
-            newUrl += $"&{nameof(redirDisc)}=false";
-        else
-            newUrl += $"?{nameof(redirDisc)}=false";
+        //todone: use parsequerystring
+        var queryStr = HttpUtility.ParseQueryString(Request.QueryString.Value ?? "");
+        queryStr[nameof(redirDisc)] = "false";
+        string newUrl = Request.GetDisplayUrl().Split('?')[0] + "?" + queryStr.ToString();
+
+        //string newUrl = displayUrl;
+        //// theres almost certainly a better way to do this but i dont care
+        //if (newUrl.Contains(nameof(redirDisc)))
+        //    newUrl = newUrl.Replace($"{nameof(redirDisc)}=false", $"{nameof(redirDisc)}=true");
+        //else if (newUrl.Contains('?'))
+        //    newUrl += $"&{nameof(redirDisc)}=false";
+        //else
+        //    newUrl += $"?{nameof(redirDisc)}=false";
+
 
         string discordHtml = string.Format(DiscordFormat.LARGE_VIDEO_FORMAT, thumbUrl, newUrl, width, height);
         //Response.ContentType = "text/html";
@@ -141,7 +149,7 @@ public partial class FileStorageController : Controller
     [HttpPut]
     [ActionName("upload")]
     [Consumes("application/octet-stream", IsOptional = true)]
-    [RequestSizeLimit(1024 * MB_SIZE)]
+    [RequestSizeLimit(1024* MB_SIZE)]
     public async Task<IActionResult> Upload([FromBody] Stream fileStream, string file, string auth, bool overwrite = false)
     {
         if (!Request.Headers.TryGetValue("cf-connecting-ip", out var ip))
