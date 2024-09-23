@@ -1,7 +1,14 @@
 
 using CloudFlare.Client;
 using CloudFlare.Client.Api.Zones.DnsRecord;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.RateLimiting;
+using Microsoft.Extensions.FileProviders;
+using System.Text;
+using tusdotnet;
+using tusdotnet.Interfaces;
+using tusdotnet.Models.Configuration;
 
 namespace SuperCoolWebServer
 {
@@ -58,6 +65,53 @@ namespace SuperCoolWebServer
 
             app.MapControllers();
 
+            if (!Directory.Exists(Path.Combine(Config.values.filestoreDir, "tus")))
+                Directory.CreateDirectory(Path.Combine(Config.values.filestoreDir, "tus"));
+            app.MapTus("/files", async httpCtx => {
+                httpCtx.Features.Get<IHttpMaxRequestBodySizeFeature>()!.MaxRequestBodySize = 1024 * 1024 * 30;
+                return new()
+                {
+                    Store = new tusdotnet.Stores.TusDiskStore(Path.Combine(Config.values.filestoreDir, "tus")),
+                    Events = new()
+                    {
+                        OnCreateCompleteAsync = ctx =>
+                        {
+                            Logger.Put("Created file: " + ctx.FileId);
+                            return Task.CompletedTask;
+                        },
+                        OnFileCompleteAsync = async ctx =>
+                        {
+                            ITusFile file = await ctx.GetFileAsync();
+                            if (file == null)
+                                return;
+                            
+                            var fileStream = await file.GetContentAsync(httpCtx.RequestAborted);
+                            var metadata = await file.GetMetadataAsync(httpCtx.RequestAborted);
+
+                            string filename = metadata.TryGetValue("filename", out tusdotnet.Models.Metadata? filenameMeta)
+                                                ? filenameMeta.GetString(Encoding.UTF8)
+                                                : "file";
+
+                            httpCtx.Response.ContentType = metadata.TryGetValue("filetype", out tusdotnet.Models.Metadata? filetypeMeta)
+                                                            ? filetypeMeta.GetString(Encoding.UTF8)
+                                                            : "application/octet-stream";
+
+                            //Providing New File name with extension
+                            //string filestoreDir = @"C:\tusfiles\";
+
+                            using var fileStream2 = new FileStream(Path.Combine(Config.values.filestoreDir, filename), FileMode.Create, FileAccess.Write);
+                            await fileStream.CopyToAsync(fileStream2);
+                        }
+                    }
+                };
+            });
+
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider(Path.GetFullPath("./frontend")),
+                RequestPath = "/frontend"
+            });
+
             app.Run(Config.values.listenOn);
         }
 
@@ -65,7 +119,6 @@ namespace SuperCoolWebServer
         {
             if (string.IsNullOrEmpty(Config.values.cloudflareKey))
                 return;
-            using HttpClient clint = new();
             using CloudFlareClient cf = new(Config.values.cloudflareKey);
 
             var zones = cf.Zones.GetAsync().GetAwaiter().GetResult();
