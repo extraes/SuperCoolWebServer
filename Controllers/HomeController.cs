@@ -2,6 +2,7 @@
 
 namespace SuperCoolWebServer.Controllers;
 
+[ApiExplorerSettings(IgnoreApi = true)]
 [Route("/")]
 public class HomeController : Controller
 {
