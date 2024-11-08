@@ -38,6 +38,7 @@ public class CobaltController : Controller
         useCobaltApiLink ??= Config.values.defualtCobaltApi;
         useCobaltApiLink = useCobaltApiLink.TrimEnd('/').Replace("https://", "").Replace("http://", "");
 
+        string? rawCobaltResponse = null;
         int status = StatusCodes.Status500InternalServerError;
         try
         {
@@ -53,6 +54,8 @@ public class CobaltController : Controller
             
             HttpResponseMessage res = await Client.SendAsync(httpReq);
             status = (int)res.StatusCode;
+
+            rawCobaltResponse = await res.Content.ReadAsStringAsync();
 
             CobaltResponse? cobaltRes = await res.Content.ReadFromJsonAsync<CobaltResponse>();
 
@@ -82,6 +85,8 @@ public class CobaltController : Controller
         }
         catch (Exception ex)
         {
+            if (rawCobaltResponse is not null)
+                Logger.Warn($"Exception after getting response from cobalt! It may be an error response, see below:\n\t{rawCobaltResponse}");
             return StatusCode(status, ex.Message);
         }
     }
