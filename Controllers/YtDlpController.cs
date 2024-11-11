@@ -47,13 +47,15 @@ public class YtDlpController : Controller
 
     static void DeleteOldFiles()
     {
-        foreach (var file in files)
+        for (int i = 0; i < files.Count; i++)
         {
+            string? file = files[i];
             try
             {
                 System.IO.File.Delete(file);
                 Logger.Put($"Successfully deleted file: {file}");
                 files.Remove(file);
+                i--;
             }
             catch
             {
