@@ -48,7 +48,7 @@ public class CobaltController : Controller
                 TwitterGif = !mp4Gif,
             };
 
-            HttpRequestMessage httpReq = new(HttpMethod.Post, $"https://{useCobaltApiLink}/api/json");
+            HttpRequestMessage httpReq = new(HttpMethod.Post, $"https://{useCobaltApiLink}/");
             httpReq.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
             httpReq.Content = JsonContent.Create(req, new MediaTypeHeaderValue("application/json"));
             
@@ -57,31 +57,52 @@ public class CobaltController : Controller
 
             rawCobaltResponse = await res.Content.ReadAsStringAsync();
 
-            CobaltResponse? cobaltRes = await res.Content.ReadFromJsonAsync<CobaltResponse>();
-
-            if (!res.IsSuccessStatusCode)
+            CobaltResponse? intermediateCobaltRes = null;
+            try
+            {   
+                intermediateCobaltRes = await res.Content.ReadFromJsonAsync<CobaltResponse.Intermediate>();
+                if (intermediateCobaltRes is null)
+                    throw new Exception("Failed to deserialize intermediate cobalt response");
+            }
+            catch (Exception ex)
             {
-                return StatusCode(status, cobaltRes?.Text ?? "Cobalt API returned an empty response");
+                Logger.Warn("Failed to deserialize intermediate cobalt response: " + ex.Message);
+                return StatusCode(500, "Failed to initial-deserialize cobalt response: " + ex.Message + "\nFrom cobalt: " + rawCobaltResponse);
             }
 
-
-            if (cobaltRes?.Url is null)
-                return StatusCode(500, "Cobalt API returned an empty response");
-
-            Stream retStream = await Client.GetStreamAsync(cobaltRes.Url);
-            Logger.Put("Proxying download from " + cobaltRes.Url);
-            string filename = Path.GetFileName(cobaltRes.Url).Split('?')[0];
-            bool isTwitter = link.Contains("twitter.com") || link.Contains("x.com");
-            if (filename == "stream")
+            switch (intermediateCobaltRes.Status)
             {
-                if (isTwitter)
-                    filename = "twittergif.gif";
-                else if (link.Contains("youtu"))
-                    filename = "youtube.mp4";
-                else
-                    filename = "video.mp4";
+                case CobaltResponseStatus.error:
+                    CobaltErrorResponse? errorRes = await res.Content.ReadFromJsonAsync<CobaltErrorResponse>();
+                    if (errorRes is null)
+                        return StatusCode(500, "Failed to deserialize cobalt error response: " + rawCobaltResponse);
+                    else
+                        return StatusCode(res.IsSuccessStatusCode ? 500 : (int)res.StatusCode, errorRes);
+                case CobaltResponseStatus.redirect:
+                case CobaltResponseStatus.tunnel:
+                    CobaltDownloadResponse? cobaltRes = await res.Content.ReadFromJsonAsync<CobaltDownloadResponse>();
+                    if (cobaltRes is null)
+                        return StatusCode(500, "Failed to deserialize cobalt download response: " + rawCobaltResponse);
+
+                    Stream retStream = await Client.GetStreamAsync(cobaltRes.Url);
+                    Logger.Put("Proxying download from " + cobaltRes.Url);
+                    string filename = cobaltRes.Filename ?? Path.GetFileName(cobaltRes.Url).Split('?')[0];
+                    bool isTwitter = link.Contains("twitter.com") || link.Contains("x.com");
+                    if (filename == "stream")
+                    {
+                        if (isTwitter)
+                            filename = "twittergif.gif";
+                        else if (link.Contains("youtu")) // bc youtu.be is a thing
+                            filename = "youtube.mp4";
+                        else
+                            filename = "video.mp4";
+                    }
+                    return File(retStream, "application/octet-stream", filename);
+                case CobaltResponseStatus.picker:
+                    return StatusCode(400, "Pickers not supported. Use cobalt.tools directly.");
+                default:
+                    return StatusCode(500, "Unknown cobalt response status: " + intermediateCobaltRes.Status);
             }
-            return File(retStream, "application/octet-stream", filename);
         }
         catch (Exception ex)
         {

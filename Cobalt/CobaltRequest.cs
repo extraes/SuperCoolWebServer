@@ -12,39 +12,53 @@ public class CobaltRequest
     public string Url { get; init; }
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     /// <summary>
+    /// Uses typical "XXXp" numbers. 144, 240, 360, 480, 720, 1080, 1440, 2160, 4320, etc. 720 recommended for phones.
+    /// </summary>
+    [JsonPropertyName("videoQuality")]
+    public int VideoQuality { get; set; }
+    [JsonPropertyName("audioFormat")]
+    public CobaltAudioCodec? AudioCodec { get; set; }
+    /// <summary>
+    /// specifies the bitrate to use for the audio. applies only to audio conversion.
+    /// </summary>
+    [JsonPropertyName("audioBitrate")]
+    public int AudioBitrate { get; set; }
+    [JsonPropertyName("filenameStyle")]
+    public CobaltFilenamePattern? CobaltFilenamePattern { get; set; }
+    [JsonPropertyName("downloadMode")]
+    public CobaltDownloadMode DownloadMode { get; set; }
+    /// <summary>
     /// applies only to youtube downloads. h264 is recommended for phones.
     /// </summary>
-    [JsonPropertyName("vCodec")]
-    public CobaltVideoCodec? CobaltVideoCodec { get; set; }
-    [JsonPropertyName("aCodec")]
-    public CobaltAudioCodec? CobaltAudioCodec { get; set; }
-    [JsonPropertyName("filenamePattern")]
-    public CobaltFilenamePattern? CobaltFilenamePattern { get; set; }
-    [JsonPropertyName("isAudioOnly")]
-    public bool AudioOnly { get; set; }
+    [JsonPropertyName("youtubeVideoCodec")]
+    public CobaltVideoCodec? VideoCodec { get; set; }
     /// <summary>
-    /// enables download of original sound used in a tiktok video.
+    /// specifies the language of audio to download when a youtube video is dubbed.
     /// </summary>
-    [JsonPropertyName("isTTFullAudio")]
-    public bool TikTokFullAudio { get; set; }
-    /// <summary>
-    /// disables audio track in video downloads.
-    /// </summary>
-    [JsonPropertyName("isAudioMuted")]
-    public bool MuteAudio { get; set; }
-    /// <summary>
-    /// backend uses Accept-Language header for youtube video audio tracks when true.
-    /// </summary>
-    [JsonPropertyName("dubLang")]
+    [JsonPropertyName("youtubeDubLang")]
     public bool DubLang { get; set; }
+    /// <summary>
+    /// tunnels all downloads through the server, even when not necessary.
+    /// </summary>
+    [JsonPropertyName("alwaysProxy")]
+    public bool AlwaysProxy { get; set; }
     /// <summary>
     /// disables file metadata when set to true.
     /// </summary>
     [JsonPropertyName("disableMetadata")]
     public bool DisableMetadata { get; set; }
     /// <summary>
+    /// enables download of original sound used in a tiktok video.
+    /// </summary>
+    [JsonPropertyName("tiktokFullAudio")]
+    public bool TikTokFullAudio { get; set; }
+    /// <summary>
     /// changes whether twitter gifs are converted to .gif
     /// </summary>
     [JsonPropertyName("twitterGif")]
     public bool TwitterGif { get; set; }
+    /// <summary>
+    /// specifies whether to use HLS for downloading video or audio from youtube.
+    /// </summary>
+    public bool UseYouTubeHLS { get; set; }
 }

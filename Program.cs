@@ -23,9 +23,7 @@ namespace SuperCoolWebServer
         //const string? ADDRESS = "https://extraes.xyz/";
         public static void Main(string[] args)
         {
-            using HttpClient clint = new();
-            myIp = clint.GetStringAsync("https://icanhazip.com").GetAwaiter().GetResult().Trim();
-            SetCloudflareIp();
+            InitAsync().GetAwaiter().GetResult();
 
             var builder = WebApplication.CreateBuilder(args);
 
@@ -115,15 +113,25 @@ namespace SuperCoolWebServer
             app.Run(Config.values.listenOn);
         }
 
-        static void SetCloudflareIp()
+        static async Task InitAsync()
+        {
+            using HttpClient clint = new();
+            myIp = await clint.GetStringAsync("https://icanhazip.com");
+            myIp = myIp.Trim();
+            await SetCloudflareIpAsync();
+            await YoutubeDLSharp.Utils.DownloadFFmpeg();
+            await YoutubeDLSharp.Utils.DownloadYtDlp();
+        }
+
+        static async Task SetCloudflareIpAsync()
         {
             if (string.IsNullOrEmpty(Config.values.cloudflareKey))
                 return;
             using CloudFlareClient cf = new(Config.values.cloudflareKey);
 
-            var zones = cf.Zones.GetAsync().GetAwaiter().GetResult();
+            var zones = await cf.Zones.GetAsync();
             //zones.Result.First().dns
-            var dnsRecords = cf.Zones.DnsRecords.GetAsync(Config.values.cloudflareZoneId).GetAwaiter().GetResult();
+            var dnsRecords = await cf.Zones.DnsRecords.GetAsync(Config.values.cloudflareZoneId);
 
             var dns = dnsRecords.Result.FirstOrDefault(d => d.Type == CloudFlare.Client.Enumerators.DnsRecordType.A && d.Name == Config.values.cloudflareDnsEntryName)
                 ?? throw new Exception("DNS entry not found! Make sure it's an A record with your provided name!");
@@ -136,7 +144,7 @@ namespace SuperCoolWebServer
                 Proxied = dns.Proxied,
                 Ttl = dns.Ttl,
             };
-            var res = cf.Zones.DnsRecords.UpdateAsync(dns.ZoneId, dns.Id, moddedDns).GetAwaiter().GetResult();
+            var res = await cf.Zones.DnsRecords.UpdateAsync(dns.ZoneId, dns.Id, moddedDns);
             if (res.Success)
                 Logger.Put("Successfully updated CloudFlare DNS!");
             else
