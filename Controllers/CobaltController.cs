@@ -60,7 +60,7 @@ public class CobaltController : Controller
             CobaltResponse? intermediateCobaltRes = null;
             try
             {   
-                intermediateCobaltRes = JsonConvert.DeserializeObject<CobaltResponse.Intermediate>(rawCobaltResponse);
+                intermediateCobaltRes = System.Text.Json.JsonSerializer.Deserialize<CobaltResponse.Intermediate>(rawCobaltResponse);
                 if (intermediateCobaltRes is null)
                     throw new Exception("Failed to deserialize intermediate cobalt response");
             }
