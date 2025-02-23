@@ -149,7 +149,7 @@ namespace SuperCoolWebServer
                 if (record.Content == myIp)
                 {
                     Logger.Put("IP is already set to " + myIp, LogType.Debug);
-                    return;
+                    continue;
                 }
 
                 ModifiedDnsRecord moddedDns = new()
