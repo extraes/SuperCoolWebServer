@@ -25,7 +25,7 @@ internal class Config
     public string listenOn = "http://127.0.0.1:9009/";
     public string cloudflareKey = "";
     public string cloudflareZoneId = "";
-    public string cloudflareDnsEntryName = "";
+    public string[] cloudflareDnsEntryNames = [];
     //public int cloudflareDdnsIntervalHours = 6;
 
     // Filestorage

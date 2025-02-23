@@ -133,22 +133,36 @@ namespace SuperCoolWebServer
             //zones.Result.First().dns
             var dnsRecords = await cf.Zones.DnsRecords.GetAsync(Config.values.cloudflareZoneId);
 
-            var dns = dnsRecords.Result.FirstOrDefault(d => d.Type == CloudFlare.Client.Enumerators.DnsRecordType.A && d.Name == Config.values.cloudflareDnsEntryName)
-                ?? throw new Exception("DNS entry not found! Make sure it's an A record with your provided name!");
-
-            ModifiedDnsRecord moddedDns = new()
+            foreach (var record in dnsRecords.Result)
             {
-                Name = dns.Name,
-                Type = dns.Type,
-                Content = myIp,
-                Proxied = dns.Proxied,
-                Ttl = dns.Ttl,
-            };
-            var res = await cf.Zones.DnsRecords.UpdateAsync(dns.ZoneId, dns.Id, moddedDns);
-            if (res.Success)
-                Logger.Put("Successfully updated CloudFlare DNS!");
-            else
-                Logger.Warn("Unable to update CloudFlare DNS!!!!! " + res.Errors[0].Message);
+                if (!Config.values.cloudflareDnsEntryNames.Contains(record.Name))
+                    continue;
+
+                Logger.Put($"Found a DNS {record.Type} record {record.Name} with IP {record.Content}", LogType.Debug);
+
+                if (record.Type != CloudFlare.Client.Enumerators.DnsRecordType.A)
+                    throw new Exception("DNS entry is not an A record! Make sure it's an A record with your provided name!");
+
+                if (record.Content == myIp)
+                {
+                    Logger.Put("IP is already set to " + myIp, LogType.Debug);
+                    return;
+                }
+
+                ModifiedDnsRecord moddedDns = new()
+                {
+                    Name = record.Name,
+                    Type = record.Type,
+                    Content = myIp,
+                    Proxied = record.Proxied,
+                    Ttl = record.Ttl,
+                };
+                var res = await cf.Zones.DnsRecords.UpdateAsync(record.ZoneId, record.Id, moddedDns);
+                if (res.Success)
+                    Logger.Put($"Successfully updated CloudFlare DNS for record '{record.Name}' (ID {record.Id})!");
+                else
+                    Logger.Warn($"Unable to update CloudFlare DNS record '{record.Name}' (ID {record.Id})!!!!! {res.Errors[0].Message}");
+            }
         }
     }
 }
