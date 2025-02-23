@@ -136,7 +136,10 @@ namespace SuperCoolWebServer
             foreach (var record in dnsRecords.Result)
             {
                 if (!Config.values.cloudflareDnsEntryNames.Contains(record.Name))
+                {
+                    Logger.Put($"Skipping DNS record {record.Name} (ID {record.Id}) as it is not in the config", LogType.Debug);
                     continue;
+                }
 
                 Logger.Put($"Found a DNS {record.Type} record {record.Name} with IP {record.Content}", LogType.Debug);
 
