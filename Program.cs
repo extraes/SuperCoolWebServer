@@ -143,9 +143,6 @@ namespace SuperCoolWebServer
 
                 Logger.Put($"Found a DNS {record.Type} record {record.Name} with IP {record.Content}", LogType.Debug);
 
-                if (record.Type != CloudFlare.Client.Enumerators.DnsRecordType.A)
-                    throw new Exception("DNS entry is not an A record! Make sure it's an A record with your provided name!");
-
                 if (record.Content == myIp)
                 {
                     Logger.Put("IP is already set to " + myIp, LogType.Debug);
