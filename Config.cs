@@ -40,9 +40,11 @@ internal class Config
     public string ipAccessAuth = "REPLACEME";
 
     // auto-cobalt
-    internal string defualtCobaltApi = "co.wuk.sh";
-    [TomlInlineComment("Set if you want a local cobalt instance to be ran with SCWS")]
-    internal string? cobaltPath = null;
+    public string defualtCobaltApi = "co.wuk.sh";
+
+    // Remote-WOL
+    public string wolAuth = "REPLACEME";
+
 
     static Config()
     {
