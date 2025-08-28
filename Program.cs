@@ -162,7 +162,10 @@ namespace SuperCoolWebServer
                 string zoneId = record.ZoneId;
                 if (string.IsNullOrWhiteSpace(zoneId))
                 {
-                    if (zoneMapName.TryGetValue(record.ZoneName, out var zone) || zoneMapId.TryGetValue(record.ZoneName, out zone))
+                    // According to docs & nullability hinting, they should never be null. But they are. CF killed my grandma
+                    if (record.ZoneName is not null && zoneMapName.TryGetValue(record.ZoneName, out var zone))
+                        zoneId = zone.Id;
+                    else if (record.ZoneId is not null && zoneMapId.TryGetValue(record.Id, out zone))
                         zoneId = zone.Id;
                     else if (zoneMapId.Values.Count == 1)
                     {
