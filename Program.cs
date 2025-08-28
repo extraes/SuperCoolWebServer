@@ -141,7 +141,7 @@ namespace SuperCoolWebServer
                     continue;
                 }
 
-                Logger.Put($"Found a DNS {record.Type} record {record.Name} with IP {record.Content}", LogType.Debug);
+                Logger.Put($"Found a DNS {record.Type} record {record.Name} on zone {record.ZoneId} with IP {record.Content}", LogType.Debug);
 
                 if (record.Content == myIp)
                 {
