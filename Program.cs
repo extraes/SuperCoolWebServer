@@ -131,15 +131,15 @@ namespace SuperCoolWebServer
                 return;
             using CloudFlareClient cf = new(Config.values.cloudflareKey);
 
-            var zoneMapName = new Dictionary<string, Zone>();
-            var zoneMapId = new Dictionary<string, Zone>();
-            var zones = await cf.Zones.GetAsync();
-            foreach (var zone in zones.Result)
-            {
-                Logger.Put($"Found zone '{zone.Name}' (ID {zone.Id})");
-                zoneMapName[zone.Name] = zone;
-                zoneMapId[zone.Id] = zone;
-            }
+            // var zoneMapName = new Dictionary<string, Zone>();
+            // var zoneMapId = new Dictionary<string, Zone>();
+            // var zones = await cf.Zones.GetAsync();
+            // foreach (var zone in zones.Result)
+            // {
+            //     Logger.Put($"Found zone '{zone.Name}' (ID {zone.Id})");
+            //     zoneMapName[zone.Name] = zone;
+            //     zoneMapId[zone.Id] = zone;
+            // }
             //zones.Result.First().dns
             var dnsRecords = await cf.Zones.DnsRecords.GetAsync(Config.values.cloudflareZoneId);
 
@@ -159,22 +159,22 @@ namespace SuperCoolWebServer
                     continue;
                 }
                 
-                string zoneId = record.ZoneId;
-                if (string.IsNullOrWhiteSpace(zoneId))
-                {
-                    // According to docs & nullability hinting, they should never be null. But they are. CF killed my grandma
-                    if (record.ZoneName is not null && zoneMapName.TryGetValue(record.ZoneName, out var zone))
-                        zoneId = zone.Id;
-                    else if (record.ZoneId is not null && zoneMapId.TryGetValue(record.Id, out zone))
-                        zoneId = zone.Id;
-                    else if (zoneMapId.Values.Count == 1)
-                    {
-                        Logger.Warn("Using ZoneID fallback-fallback (there's only one zone, so we're gonna use its id).");
-                        zoneId = zoneMapId.Values.First().Id;
-                    }
-                    else
-                        Logger.Warn("Failed to map back to the original DNS record's ZoneID.");
-                }
+                // string zoneId = record.ZoneId;
+                // if (string.IsNullOrWhiteSpace(zoneId))
+                // {
+                //     // According to docs & nullability hinting, they should never be null. But they are. CF killed my grandma
+                //     if (record.ZoneName is not null && zoneMapName.TryGetValue(record.ZoneName, out var zone))
+                //         zoneId = zone.Id;
+                //     else if (record.ZoneId is not null && zoneMapId.TryGetValue(record.Id, out zone))
+                //         zoneId = zone.Id;
+                //     else if (zoneMapId.Values.Count == 1)
+                //     {
+                //         Logger.Warn("Using ZoneID fallback-fallback (there's only one zone, so we're gonna use its id).");
+                //         zoneId = zoneMapId.Values.First().Id;
+                //     }
+                //     else
+                //         Logger.Warn("Failed to map back to the original DNS record's ZoneID.");
+                // }
 
                 ModifiedDnsRecord moddedDns = new()
                 {
@@ -184,7 +184,7 @@ namespace SuperCoolWebServer
                     Proxied = record.Proxied,
                     Ttl = record.Ttl,
                 };
-                var res = await cf.Zones.DnsRecords.UpdateAsync(record.ZoneId, record.Id, moddedDns);
+                var res = await cf.Zones.DnsRecords.UpdateAsync(Config.values.cloudflareZoneId, record.Id, moddedDns);
                 if (res.Success)
                     Logger.Put($"Successfully updated CloudFlare DNS for record '{record.Name}' (ID {record.Id})!");
                 else
