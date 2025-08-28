@@ -8,6 +8,7 @@ using Microsoft.Extensions.FileProviders;
 using System.Text;
 using CloudFlare.Client.Api.Zones;
 using CloudFlare.Client.Client.Zones;
+using CloudFlare.Client.Enumerators;
 using tusdotnet;
 using tusdotnet.Interfaces;
 using tusdotnet.Models.Configuration;
@@ -156,6 +157,12 @@ namespace SuperCoolWebServer
                 if (record.Content == myIp)
                 {
                     Logger.Put("IP is already set to " + myIp, LogType.Debug);
+                    continue;
+                }
+
+                if (record.Type != DnsRecordType.A)
+                {
+                    Logger.Put("Record is not a DNS A record. Ignoring.", LogType.Debug);
                     continue;
                 }
                 
