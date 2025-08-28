@@ -6,6 +6,8 @@ using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.FileProviders;
 using System.Text;
+using CloudFlare.Client.Api.Zones;
+using CloudFlare.Client.Client.Zones;
 using tusdotnet;
 using tusdotnet.Interfaces;
 using tusdotnet.Models.Configuration;
@@ -129,7 +131,15 @@ namespace SuperCoolWebServer
                 return;
             using CloudFlareClient cf = new(Config.values.cloudflareKey);
 
+            var zoneMapName = new Dictionary<string, Zone>();
+            var zoneMapId = new Dictionary<string, Zone>();
             var zones = await cf.Zones.GetAsync();
+            foreach (var zone in zones.Result)
+            {
+                Logger.Put($"Found zone '{zone.Name}' (ID {zone.Id})");
+                zoneMapName[zone.Name] = zone;
+                zoneMapId[zone.Id] = zone;
+            }
             //zones.Result.First().dns
             var dnsRecords = await cf.Zones.DnsRecords.GetAsync(Config.values.cloudflareZoneId);
 
@@ -141,12 +151,26 @@ namespace SuperCoolWebServer
                     continue;
                 }
 
-                Logger.Put($"Found a DNS {record.Type} record {record.Name} on zone {record.ZoneId} with IP {record.Content}", LogType.Debug);
-
+                Logger.Put($"Found a DNS {record.Type} record {record.Name} on zone '{record.ZoneName}' (ZID {record.ZoneId}) with IP {record.Content}", LogType.Debug);
+                
                 if (record.Content == myIp)
                 {
                     Logger.Put("IP is already set to " + myIp, LogType.Debug);
                     continue;
+                }
+                
+                string zoneId = record.ZoneId;
+                if (string.IsNullOrWhiteSpace(zoneId))
+                {
+                    if (zoneMapName.TryGetValue(record.ZoneName, out var zone) || zoneMapId.TryGetValue(record.ZoneName, out zone))
+                        zoneId = zone.Id;
+                    else if (zoneMapId.Values.Count == 1)
+                    {
+                        Logger.Warn("Using ZoneID fallback-fallback (there's only one zone, so we're gonna use its id).");
+                        zoneId = zoneMapId.Values.First().Id;
+                    }
+                    else
+                        Logger.Warn("Failed to map back to the original DNS record's ZoneID.");
                 }
 
                 ModifiedDnsRecord moddedDns = new()
