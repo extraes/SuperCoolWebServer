@@ -18,10 +18,12 @@ internal static class Logger
         int maxFiles = Config.values.maxLogFiles;
         if (!Directory.Exists(Config.values.logPath)) Directory.CreateDirectory(Config.values.logPath);
         string filePath = Path.Combine(Config.values.logPath, DateTime.Now.ToString(FILE_DATE_FORMAT) + ".log");
+        string latestPath = Path.Combine(Config.values.logPath, "latest.log");
 
         Console.WriteLine("Initializing logger");
         logFile = File.AppendText(filePath);
         Put("Created stream writer - logger now active, writing to " + filePath);
+        File.CreateSymbolicLink(latestPath, Path.GetFullPath(filePath));
 
         // delete oldest log files over max log file count
         // https://stackoverflow.com/questions/20486559/get-a-list-of-files-in-a-directory-in-descending-order-by-creation-date-using-c#20486570
