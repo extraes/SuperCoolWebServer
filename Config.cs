@@ -11,6 +11,8 @@ using Tomlet.Attributes;
 
 namespace SuperCoolWebServer;
 
+[SuppressMessage("ReSharper", "InconsistentNaming")]
+[SuppressMessage("ReSharper", "FieldCanBeMadeReadOnly.Global")]
 internal class Config
 {
     public static event Action? ConfigChanged;
@@ -21,6 +23,7 @@ internal class Config
     static readonly HashAlgorithm hasher = SHA256.Create();
 
     public int maxLogFiles = 5;
+    public string databaseLocation = "./SuperCoolWebServer.db";
 
     public string listenOn = "http://127.0.0.1:9009/";
     public string cloudflareKey = "";
@@ -30,21 +33,10 @@ internal class Config
 
     // Filestorage
     public string filestoreDir = "./filestore/";
-    public string filestoreAuth = "REPLACEME";
     public string filestoreDefaultThumbnail = "REPLACEME"; // https://upload.wikimedia.org/wikipedia/en/1/1e/SNES_Plok_cover_art.png
-
-    // Link
-    public string redirectAuth = "REPLACEME";
-
-    // IP Access
-    public string ipAccessAuth = "REPLACEME";
 
     // auto-cobalt
     public string defualtCobaltApi = "co.wuk.sh";
-
-    // Remote-WOL
-    public string wolAuth = "REPLACEME";
-
 
     static Config()
     {

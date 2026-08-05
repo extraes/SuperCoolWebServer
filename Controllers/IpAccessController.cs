@@ -1,5 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using System.Linq;
+using Microsoft.AspNetCore.Authorization;
+using SuperCoolWebServer.Models;
 
 namespace SuperCoolWebServer.Controllers;
 
@@ -30,11 +32,9 @@ public class IpAccessController : Controller
 
     [HttpPut]
     [ActionName("create")]
+    [Authorize(Policy = nameof(Permissions.CreateLinks))]
     public IActionResult CreateApp(string appId, string appAuth, string creationAuth)
     {
-        if (Config.values.ipAccessAuth != creationAuth)
-            return Unauthorized();
-
         if (PersistentData.values.applicationAuth.ContainsKey(appId))
             return Conflict();
 

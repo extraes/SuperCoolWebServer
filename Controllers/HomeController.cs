@@ -8,6 +8,6 @@ public class HomeController : Controller
 {
     public IActionResult Index()
     {
-        return View("/Views/TusView.cshtml");
+        return View("/Views/IndexView.cshtml");
     }
 }

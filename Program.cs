@@ -1,28 +1,31 @@
 
 using CloudFlare.Client;
 using CloudFlare.Client.Api.Zones.DnsRecord;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.RateLimiting;
 using Microsoft.Extensions.FileProviders;
 using System.Text;
-using CloudFlare.Client.Api.Zones;
-using CloudFlare.Client.Client.Zones;
+using System.Threading.RateLimiting;
 using CloudFlare.Client.Enumerators;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.OpenApi.Models;
+using Snowflakes;
+using SuperCoolWebServer.Auth;
+using SuperCoolWebServer.Data;
+using SuperCoolWebServer.Models;
 using tusdotnet;
 using tusdotnet.Interfaces;
+using tusdotnet.Models;
 using tusdotnet.Models.Configuration;
 
 namespace SuperCoolWebServer
 {
     public class Program
     {
-#pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-        static string myIp;
-#pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
-
                               //const string? ADDRESS = null;
-        const string? ADDRESS = "http://localhost:9009/";
+        // const string? ADDRESS = "http://localhost:9009/";
         //const string? ADDRESS = "https://extraes.xyz/";
         public static void Main(string[] args)
         {
@@ -33,47 +36,214 @@ namespace SuperCoolWebServer
             // Add services to the container.
 
             builder.Services.AddControllers();
+            
+            // Adding the snowflake gen doesn't need the ServiceProvider, but it's good to have if I switch to an
+            // injected config or program information system to like, get a sharded instance ID, it will come in handy
+            builder.Services.AddSingleton(static serviceProvider =>
+            {
+                const int INSTANCE_ID = 0;
+                DateTime Epoch = new DateTime(2026, 1, 1,  0, 0, 0, DateTimeKind.Utc);
+
+                var snowflakeGen = SnowflakeGenerator.CreateBuilder()
+                        .AddConstant(1, 0) // So it's always positive
+                        .AddBlockingTimestamp(53, Epoch, TimeSpan.TicksPerMillisecond)
+                        .AddConstant(8, INSTANCE_ID)
+                        .AddConstant(1, 0) // So it's always even
+                        .Build();
+                return snowflakeGen;
+            });
+            
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
-            builder.Services.AddMvc(opt => opt.InputFormatters.Insert(0, new RawRequestBodyFormatter("image/gif")));
-            builder.Services.AddMvc(opt => opt.InputFormatters.Insert(0, new RawRequestBodyFormatter("application/octet-stream")));
-            builder.Services.AddMvc(opt => opt.InputFormatters.Insert(0, new RawRequestBodyFormatter("video/mp4")));
-            builder.Services.AddMvc(opt => opt.InputFormatters.Insert(0, new RawRequestBodyFormatter("video/webm")));
-            builder.Services.AddRateLimiter(_ =>
+            builder.Services.AddDbContext<DataContext>();
+            builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+            builder.Services.AddAuthorization(options =>
             {
-                _.AddFixedWindowLimiter("fixed", opt =>
+                var allPerms = Enum.GetValues<Permissions>();
+
+                foreach (var permission in allPerms)
                 {
-                    opt.PermitLimit = 4;
-                    opt.Window = TimeSpan.FromSeconds(10);
-                    opt.QueueProcessingOrder = System.Threading.RateLimiting.QueueProcessingOrder.OldestFirst;
-                    opt.QueueLimit = 2;
-                });
+                    if (permission is Permissions.Administrator or 0)
+                        continue;
+                    
+                    var requirement = new PermissionRequirement(permission);
+                    options.AddPolicy(permission.ToString(), policy => policy.AddRequirements(requirement));
+                }
+            });
+            builder.Services.AddSingleton<IAuthorizationHandler, PermissionAuthorizationHandler>();
+
+            builder.Services.ConfigureApplicationCookie(options =>
+            {
+                options.Cookie.Name = builder.Environment.IsDevelopment()
+                    ? "SuperCoolAuth"
+                    : "__Host-SuperCoolAuth";
+                options.Cookie.HttpOnly = true;
+                options.Cookie.SecurePolicy = builder.Environment.IsDevelopment()
+                    ? CookieSecurePolicy.SameAsRequest
+                    : CookieSecurePolicy.Always;
+                options.Cookie.SameSite = SameSiteMode.Strict;
+
+                options.LoginPath = "/login";
+                options.AccessDeniedPath = "/forbidden";
+
+                options.ExpireTimeSpan = TimeSpan.FromDays(14);
+                options.SlidingExpiration = true;
+            });
+            
+            builder.Services.AddIdentity<SuperCoolUser, IdentityRole<long>>(options =>
+                {
+                    options.User.RequireUniqueEmail = false; // dont use email
+                    // ReSharper disable once StringLiteralTypo
+                    options.User.AllowedUserNameCharacters = "qwertyuiopasdfghjklzxcvbnmQWERTYUIOPASDFGHJKLZXCVBNM1234567890-_";
+
+                    options.Password.RequiredLength = 12;
+                    options.Password.RequireDigit = true;
+                    options.Password.RequireUppercase = true;
+                    options.Password.RequireNonAlphanumeric = true;
+                })
+                .AddEntityFrameworkStores<DataContext>()
+                .AddClaimsPrincipalFactory<PermissionsToClaimsPrincipalFactory>()
+                .AddDefaultTokenProviders();
+            
+            builder.Services.AddMvc(opt =>
+            {
+                string[] mimeTypes =
+                [
+                    "image/gif",
+                    "application/octet-stream",
+                    "video/mp4",
+                    "video/webm"
+                ];
+                foreach (var mimeType in mimeTypes)
+                {
+                    opt.InputFormatters.Add(new RawRequestBodyFormatter(mimeType));
+                }
+                opt.InputFormatters.Insert(0, new RawRequestBodyFormatter("image/gif"));
             });
 
+            RateLimiters.SetupRateLimiters(builder);
+
             var app = builder.Build();
+            app.UseRateLimiter();
 
             // Configure the HTTP request pipeline.
-            //if (app.Environment.IsDevelopment())
-            //{
-            app.UseSwagger();
-            app.UseSwaggerUI();
-            //}
+            if (app.Environment.IsDevelopment())
+            {
+                // Give Swagger the ability to get an antiforgery token
+                app.MapGet("/_af/token", (HttpContext ctx, IAntiforgery antiforgery) =>
+                {
+                    var tokens = antiforgery.GetAndStoreTokens(ctx);
+                    ctx.Response.Headers.CacheControl = "no-store";
 
-            app.UseHttpsRedirection();
+                    return Results.Ok(new
+                    {
+                        token = tokens.RequestToken
+                    });
+                })
+                .AllowAnonymous()
+                .RequireRateLimiting(RateLimiters.FIXED);
+                
+                app.UseDeveloperExceptionPage();
+                app.UseMigrationsEndPoint();
+                app.UseSwagger();
+                app.UseSwaggerUI(opt =>
+                {
+                    opt.ConfigObject.AdditionalItems["withCredentials"] = true;
+                    opt.UseRequestInterceptor("""
+                        function (request) {
+                            console.log(request);
+                            /*
+                            Not every request has the "method" field set.
+                            (For example: The very first req to get the swagger.json definition)
+                            ((also this has use multiline comment syntax because this all gets flattened into one line))
+                            */
+                            if (!request.method)
+                                return;
+                            const method = request.method.toUpperCase();
+                            const safeMethods = ["GET", "HEAD", "OPTIONS", "TRACE"];
 
+                            if (safeMethods.includes(method)) {
+                              return request;
+                            }
+
+                            return fetch("/_af/token", {
+                              credentials: "same-origin",
+                              cache: "no-store"
+                            })
+                            .then(function (response) {
+                              if (!response.ok) {
+                                  throw new Error(
+                                      "Could not obtain antiforgery token: " +
+                                      response.status
+                                  );
+                              }
+
+                              return response.json();
+                            })
+                            .then(function (body) {
+                              request.headers = request.headers || {};
+                              request.headers["RequestVerificationToken"] = body.token;
+
+                              return request;
+                            });
+                        }
+                        """.Replace('"','\'').ReplaceLineEndings(" "));
+                    // String manip is needed there because Swashbuckle stupidly outputs malformed JSON otherwise.
+                });
+            }
+            else
+            {
+                app.UseExceptionHandler("/Error");
+            }
+
+            using (var scope = app.Services.CreateScope())
+            {
+                var services = scope.ServiceProvider;
+                var context = services.GetRequiredService<DataContext>();
+                context.Database.EnsureCreated();
+                
+                DataHelper.Initialize(services.GetRequiredService<UserManager<SuperCoolUser>>(),
+                    services.GetRequiredService<SnowflakeGenerator<long>>())
+                    .GetAwaiter().GetResult();
+            }
+
+            if (!app.Environment.IsDevelopment())
+                app.UseHttpsRedirection();
+            
+            app.UseAuthentication();
             app.UseAuthorization();
-
+            app.UseAntiforgery();
+            
             app.MapControllers();
 
+            ConfigureTus(app);
+
+            app.UseStaticFiles(new StaticFileOptions()
+            {
+                FileProvider = new PhysicalFileProvider(Path.GetFullPath("./frontend")),
+                RequestPath = "/frontend"
+            });
+
+            if (app.Environment.IsDevelopment())
+                app.Run();
+            else
+                app.Run(Config.values.listenOn);
+        }
+
+        private static void ConfigureTus(WebApplication app)
+        {
             if (!Directory.Exists(Path.Combine(Config.values.filestoreDir, "tus")))
                 Directory.CreateDirectory(Path.Combine(Config.values.filestoreDir, "tus"));
+
             app.MapTus("/files", async httpCtx => {
+                
                 httpCtx.Features.Get<IHttpMaxRequestBodySizeFeature>()!.MaxRequestBodySize = 1024 * 1024 * 30;
-                return new()
+                return new DefaultTusConfiguration
                 {
                     Store = new tusdotnet.Stores.TusDiskStore(Path.Combine(Config.values.filestoreDir, "tus")),
-                    Events = new()
+                    Events = new Events
                     {
                         OnCreateCompleteAsync = ctx =>
                         {
@@ -90,37 +260,29 @@ namespace SuperCoolWebServer
                             var metadata = await file.GetMetadataAsync(httpCtx.RequestAborted);
 
                             string filename = metadata.TryGetValue("filename", out tusdotnet.Models.Metadata? filenameMeta)
-                                                ? filenameMeta.GetString(Encoding.UTF8)
-                                                : "file";
+                                ? filenameMeta.GetString(Encoding.UTF8)
+                                : "file";
 
                             httpCtx.Response.ContentType = metadata.TryGetValue("filetype", out tusdotnet.Models.Metadata? filetypeMeta)
-                                                            ? filetypeMeta.GetString(Encoding.UTF8)
-                                                            : "application/octet-stream";
+                                ? filetypeMeta.GetString(Encoding.UTF8)
+                                : "application/octet-stream";
 
                             //Providing New File name with extension
                             //string filestoreDir = @"C:\tusfiles\";
 
-                            using var fileStream2 = new FileStream(Path.Combine(Config.values.filestoreDir, filename), FileMode.Create, FileAccess.Write);
+                            await using var fileStream2 = new FileStream(Path.Combine(Config.values.filestoreDir, filename), FileMode.Create, FileAccess.Write);
                             await fileStream.CopyToAsync(fileStream2);
+                            
                         }
                     }
                 };
-            });
-
-            app.UseStaticFiles(new StaticFileOptions()
-            {
-                FileProvider = new PhysicalFileProvider(Path.GetFullPath("./frontend")),
-                RequestPath = "/frontend"
-            });
-
-            app.Run(Config.values.listenOn);
+            })
+            .RequireRateLimiting(RateLimiters.STRICT)
+            .RequireAuthorization(nameof(Permissions.UploadFiles));
         }
 
         static async Task InitAsync()
         {
-            using HttpClient clint = new();
-            myIp = await clint.GetStringAsync("https://icanhazip.com");
-            myIp = myIp.Trim();
             await SetCloudflareIpAsync();
             await YoutubeDLSharp.Utils.DownloadFFmpeg();
             await YoutubeDLSharp.Utils.DownloadYtDlp();
@@ -130,6 +292,11 @@ namespace SuperCoolWebServer
         {
             if (string.IsNullOrEmpty(Config.values.cloudflareKey))
                 return;
+            
+            using HttpClient clint = new();
+            var myIp = await clint.GetStringAsync("https://icanhazip.com");
+            myIp = myIp.Trim();
+            
             using CloudFlareClient cf = new(Config.values.cloudflareKey);
 
             // var zoneMapName = new Dictionary<string, Zone>();

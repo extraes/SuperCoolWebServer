@@ -1,5 +1,7 @@
-﻿using Microsoft.AspNetCore.Http.Extensions;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
+using SuperCoolWebServer.Models;
 
 namespace SuperCoolWebServer.Controllers;
 
@@ -8,9 +10,9 @@ public class RedirectController : Controller
 {
     [HttpGet]
     [ActionName("go")]
-    public IActionResult GotoLink(string lnkName)
+    public IActionResult GotoLink( string lnkName)
     {
-        if (string.IsNullOrEmpty(lnkName) || lnkName.Any(c => c == '/' || c == '\\'))
+        if (string.IsNullOrEmpty(lnkName) || lnkName.Any(c => c is '/' or '\\'))
             return BadRequest();
 
         if (PersistentData.values.links.TryGetValue(lnkName, out var link))
@@ -23,11 +25,9 @@ public class RedirectController : Controller
 
     [HttpPut]
     [ActionName("set")]
-    public IActionResult SetLink(string lnkName, string target, string auth)
+    [Authorize(Policy = nameof(Permissions.CreateLinks))]
+    public IActionResult SetLink(string lnkName, string target)
     {
-        if (Config.values.redirectAuth != auth)
-            return Unauthorized();
-
         if (string.IsNullOrEmpty(lnkName) || lnkName.Any(c => c == '/' || c == '\\'))
             return BadRequest();
 

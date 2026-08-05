@@ -3,8 +3,13 @@ using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
 using System.Runtime.CompilerServices;
+using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Web;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.RateLimiting;
+using SuperCoolWebServer.Auth;
+using SuperCoolWebServer.Models;
 using Xabe.FFmpeg;
 
 namespace SuperCoolWebServer.Controllers;
@@ -14,38 +19,67 @@ public partial class FileStorageController : Controller
 {
     static readonly Regex portRegex = PortRegex();
     const int MB_SIZE = 1024 * 1024;
-    static string Directory => Path.GetFullPath(Config.values.filestoreDir);
+    static string BaseDirectory => Path.GetFullPath(Config.values.filestoreDir);
     static ConditionalWeakTable<string, byte[]> cachedFiles = new();
     static ConditionalWeakTable<string, IMediaInfo> cachedProbes = new();
 
     static void EnsureDirectory()
     {
-        System.IO.Directory.CreateDirectory(Directory);
+        System.IO.Directory.CreateDirectory(BaseDirectory);
     }
 
     [HttpGet]
     [ActionName("query")]
     public IActionResult QueryFile(string file)
     {
-        FileInfo finf = new(Path.Combine(Directory, file));
+        FileInfo finf = new(Path.Combine(BaseDirectory, file));
         if (!finf.Exists) return NotFound();
-
-
+        
         return Content(finf.Length.ToString());
+    }
+    
+    [HttpGet]
+    [ActionName("list")]
+    [Authorize(Policy = nameof(Permissions.ListFiles))]
+    public IActionResult ListAll(string file)
+    {
+        string[] files = Directory.Exists(BaseDirectory)
+            ? Directory.GetFiles(BaseDirectory)
+            : [];
+
+        return Json(files);
     }
 
     [HttpGet]
     [ActionName("exists")]
     public IActionResult Exists(string file)
     {
-        FileInfo finf = new(Path.Combine(Directory, file));
+        FileInfo finf = new(Path.Combine(BaseDirectory, file));
         if (!finf.Exists) return NotFound();
 
         return Ok();
     }
 
+    // literally just gets a page and displays it as HTML.
+    // stupid simple and probably a bad idea. but #weball, and as of when this is implemented, uploading files 
+    [HttpGet]
+    [ActionName("site")]
+    public async Task<IActionResult> Site(string file)
+    {
+        if (string.IsNullOrEmpty(file)
+            || file.Any(c => c == '/' || c == '\\')
+            || Path.GetExtension(file) != ".html")
+            return BadRequest();
+
+        FileInfo finf = new(Path.Combine(BaseDirectory, file));
+        if (!finf.Exists) return NotFound();
+        
+        return Content(await finf.OpenText().ReadToEndAsync(), "text/html");
+    }
+
     [HttpGet]
     [ActionName("dl")]
+    [EnableRateLimiting(RateLimiters.STRICT)]
     public async Task<IActionResult> Download(string file, bool redirDisc = true)
     {
         if (!Request.Headers.TryGetValue("cf-connecting-ip", out var ip))
@@ -57,7 +91,7 @@ public partial class FileStorageController : Controller
         if (string.IsNullOrEmpty(file) || file.Any(c => c == '/' || c == '\\'))
             return BadRequest();
 
-        FileInfo finf = new(Path.Combine(Directory, file));
+        FileInfo finf = new(Path.Combine(BaseDirectory, file));
         if (!finf.Exists) return NotFound();
 
         string mime = Path.GetExtension(file) switch
@@ -149,21 +183,19 @@ public partial class FileStorageController : Controller
     [HttpPut]
     [ActionName("upload")]
     [Consumes("application/octet-stream", IsOptional = true)]
-    [RequestSizeLimit(1024* MB_SIZE)]
+    [RequestSizeLimit(1024 * MB_SIZE)]
+    [Authorize(Policy = nameof(Permissions.UploadFiles))]
     public async Task<IActionResult> Upload([FromBody] Stream fileStream, string file, string auth, bool overwrite = false)
     {
         if (!Request.Headers.TryGetValue("cf-connecting-ip", out var ip))
             ip = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
-        
-        if (Config.values.filestoreAuth != auth)
-            return Unauthorized();
 
         if (string.IsNullOrEmpty(file) || file.Any(c => c == '/' || c == '\\'))
             return BadRequest();
 
         EnsureDirectory();
 
-        string path = Path.Combine(Directory, file);
+        string path = Path.Combine(BaseDirectory, file);
         if (System.IO.File.Exists(path) && !overwrite)
             return StatusCode(409);
 
@@ -180,7 +212,7 @@ public partial class FileStorageController : Controller
 
         return Created(url.Replace("upload", "dl"), null);
     }
-
+    
     [GeneratedRegex("\\:\\d{1,5}")]
     private static partial Regex PortRegex();
 }

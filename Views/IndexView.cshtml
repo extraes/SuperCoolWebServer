@@ -1,0 +1,187 @@
+﻿@using Microsoft.AspNetCore.Antiforgery
+@using Microsoft.AspNetCore.Identity
+@using SuperCoolWebServer.Models
+
+@{
+    const string FILESTORE_KEY = "filestoreAuth";
+}
+
+<!DOCTYPE html>
+<head>
+    <title>top text</title>
+    
+    <!--suppress JSUnresolvedLibraryURL -->
+    <link rel="stylesheet" href="https://unpkg.com/@@spiritov/ds.css"/>
+    <link href="/frontend/styles/main.css" rel="stylesheet">
+    
+    <link href="https://unpkg.com/uppy@5.2.4/dist/uppy.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/uppy@5.2.4/dist/uppy.min.js"></script>
+    <script src="https://unpkg.com/jquery@4.0.0/dist/jquery.min.js"></script>
+</head>
+
+<body class="ds-grid">
+
+<div class="pictochat-window">
+    <div class="pictochat-message pictochat-enter-highlight">Now joining..</div>
+    <div class="pictochat-message">
+        <header class="ds-darkpurple-50">extraes</header>
+        <span>
+            welcome to my website! I'm more of a backend guy <sup>pause</sup>, so uh, hopefully judge me by my other projects?
+        </span>
+    </div>
+    
+    <div class="pictochat-message">
+        <header class="ds-darkpurple-50">extraes</header>
+        <span>
+            I (mostly) made this with my own two human hands using the lovely
+            <a href="https://github.com/spiritov/ds.css">ds.css</a> as the style framework :3
+            It's still a WIP, but thanks for checking it out!
+        </span>
+    </div>
+    
+    <div class="pictochat-message">
+        <header class="ds-darkpurple-50">extraes</header>
+        <span>
+            Anyways, thanks for checking out what I've got here! 
+        </span>
+    </div>
+    
+    <div class="pictochat-status pictochat-exit-highlight">
+        <span>extraes left</span>
+    </div>
+</div>
+
+<details>
+    <summary>If you're here to upload something :o</summary>
+    <div class="ds-repeating">
+        @{
+        var userManager = Context.RequestServices.GetRequiredService<UserManager<SuperCoolUser>>();
+        var user = await userManager.GetUserAsync(Context.User);
+        if (user is null)
+        {
+            <div class="info ds-orange">
+                <div class="info-square">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAUKADAAQAAAABAAAAUAAAAAAx4ExPAAAD+UlEQVR4Ae2bi27kMAhFJ9X+d9Uvnw7b0iAKGPA7TaSuHdvAvSd2pppqj+fretxXmsBbOjIR+HEcD/i50jUMIAVH+7vDHALwSsD4Ax8CkBe90v0UgO8X+tyaAvDegQECV37/AYapOxDg7g54OEB8/1FwO4P8h6eRGsIxaNEwHevVBw0j67Xw8X8HavCggDVXEpCJzcSUdPScdx1hMNXamLXTWtfqDtAyQ4vXGuN14J6PYb3aWpind/vzDuRGNAM4ztfXCIVcmLcmz4zY4/m6tMIeUyWQmKO0DjTgWqrHE0fXj+6bAFGMZAznoG1lUqvTKj/V3Krv+hApGdCMR0VqdVrlj+rxrHftQJrIMqMBoPGevlajVX6PBu8a1w6kycBEbyNafg0s1Te6HwaIAjWTOF/bavlXg5gGCICoSdqvhYfxWs6VILrfgShaM4Wme7RYm+aeoYPWx75rB1IDtI9JererwJJ8ugDywNkQVwLqOsIasJWM8Ic86t61A29Q+uNwAYRwCaK2M/Vy15txA9Ss/3WIIYDSLgSwfxliCCDAuiEChfMKA4TQG2IlwBviCdD1e+C5/HdPe/9pu/R3hvKIVoNGtqxH85b61QChgGYwY0rLVTIizWfqS3mssSYAoYBkPGJAireER+YiOiJ5YW3qQ0QqIon0QvGuk+p6xnrm//mzpkdIZg2Il+Birog5KU8kHmu2bJsdYRQlGZKMw3ppLebRYnDeannemlxWHZhrDhCSUgOaeLoGYvDS1uP8am2XI5yFkI2bCbXZh0jEhLT7doQHnqcAjMBefe1wgFfaffcObLC9h+9ArnnXdx/6GApQOr4oZNd2KMBdIVm6pwLc/fgC2KkArSe7y9wNkDyp4/XFB/xErhvgNy0KjvZLMG+ACiHvbuzyZYKiafpwZGehWIh56v+R4XEJgBkwCKi2XQ4gwtCeOs7XGo/EW7twKYAUDhVNxyPGW65FDfzBLgWQG0bRfLz2nkOQ8mm1YZzGLw1QMmaNUWPWuto5CrHL30QsgR/fv6i+k0827WlbeXrDKmnC+sMBcigloXQ9iqZjvfolXahl+SOMQnuByuSlmpYESAVmDLaIAQ18F0q6lgMoiWwBJJKDg7NilwNoie01FwHGNVwSYA0QDgjvtZOxLcAekBAWbzV4sG4rgCOhARwLHMzDtQ3AEfA8wL6wnf9uA/CU7O8BEA4+A8mquBxAMBwxKa2N5rAAlea2+UpfAiWN8R1XAlA7Px2gBCFrCuG1zFnSstwRLgm25jk4BGrF1M5dCuAIYBz41gCjwPgO5TAy99PfgRnRmZge8EDHVgCzELJxnge19RHWDPYExmsuCRDebVEI0fUcRPb+E+28arlezT4YAAAAAElFTkSuQmCC"
+                         alt="Drawn angry face holding an outline of a gun"/>
+                </div>
+                <div class="info-container">
+                    <div style="display: flex">
+                        <div class="info-label slim-label">Who are you!?!? >:I</div>
+                        
+                        <button id="login-button" class="slim-button" onclick="saveFilestoreAuth()">Log in!</button>
+                    </div>
+                    
+                    <div class="input-wrapper">
+                        <span>Username: </span>
+                        <input id="username-input" type="text" class="input-sm"/>
+                    </div>
+
+                    <div class="input-wrapper">
+                        <span>Password: </span>
+                        <input id="password-input" type="text" class="input-sm"/>
+                    </div>
+                </div>
+            </div>
+        }
+        else if (user.Permissions.HasFlag(Permissions.UploadFiles))
+        {
+            <div>
+                <span>Welcome back @user.UserName  :3</span>
+                <button class="slim-button ds-red-50" onclick="logOut()">Not you? Log out</button>
+            </div>
+            
+            <text><!-- modified chatgpt code LOL -->
+                <!-- Uppy Dashboard --></text>
+            <div class="uploader" id="drag-drop-area"></div>
+
+            @:<!-- Initialize Uppy -->
+            <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const uppy = new Uppy.Uppy({
+                    restrictions: {
+                        // maxNumberOfFiles: 5,  // Limit number of files
+                        // allowedFileTypes: ['image/*', 'video/*']  // Allow specific file types
+                    },
+                    autoProceed: false  // Automatically start upload
+                })
+                    .use(Uppy.Dashboard, {
+                        inline: true,
+                        target: '#drag-drop-area',
+                        showProgressDetails: true,
+                        height: 350 // this gets unset in the custom CSS. not setting it at all breaks things. 
+                    })
+                    .use(Uppy.Tus, {
+                        endpoint: '/files', // Endpoint for file upload
+                        headers: {authorization: `Bearer ${cookieStore.get('@FILESTORE_KEY')}`},
+                        chunkSize: 1024 * 1024 * 25 // 25mb to skate under cf req limits
+                    });
+        
+                uppy.on('complete', (result) => {
+                    console.log('Upload complete! We’ve uploaded these files:', result.successful);
+                });
+            });
+        </script>
+        }
+        }
+    </div>
+</details>
+
+<div style="flex: 1"></div>
+
+<footer class="bar-lg ds-darkpurple-50">
+    <footer>bottom text</footer>
+</footer>
+
+<script>
+    @{
+        var antiforgery = ViewContext.HttpContext.RequestServices.GetRequiredService<IAntiforgery>();
+        var tokens = antiforgery.GetAndStoreTokens(Context);
+    }
+    async function saveFilestoreAuth() {
+        let password = $("#password-input").val();
+        let username = $("#username-input").val();
+        console.log("Logging in with ", {username, password});
+        
+        let result = await fetch(`auth/login`, {
+            method: "POST",
+            body: JSON.stringify({ username, password }),
+            headers: {
+                "Content-Type": "application/json",
+                "@tokens.HeaderName": "@tokens.RequestToken"
+            },
+        });
+
+        let loginButton = $("#login-button");
+        if (result.ok)
+        {
+            // Flash green so there's a success indicator while the browser refreshes
+            loginButton.addClass("ds-green");
+            window.location.reload();
+        }
+        else
+        {
+            // Blink the login button in the stuuupidest way possible
+            for (let i = 0; i < 10; i++) {
+                if (i % 2 === 0) 
+                    setTimeout(() => { loginButton.addClass("ds-red") }, i * 250);
+                else
+                    setTimeout(() => { loginButton.removeClass("ds-red") }, i * 250);
+            }
+        }
+    }
+    
+    async function logOut() {
+        let result = await fetch(`auth/logout`, {
+            method: "POST",
+            headers: {
+                "@tokens.HeaderName": "@tokens.RequestToken"
+            },
+        });
+        
+        if (result.ok)
+            window.location.reload();
+        
+    }
+    
+</script>
+</body>
