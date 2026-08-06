@@ -23,6 +23,9 @@ internal static class Logger
         Console.WriteLine("Initializing logger");
         logFile = File.AppendText(filePath);
         Put("Created stream writer - logger now active, writing to " + filePath);
+        
+        // Update latest.log symlink
+        File.Delete(latestPath);
         File.CreateSymbolicLink(latestPath, Path.GetFullPath(filePath));
 
         // delete oldest log files over max log file count
