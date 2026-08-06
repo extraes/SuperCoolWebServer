@@ -61,7 +61,8 @@ public partial class FileStorageController : Controller
     }
 
     // literally just gets a page and displays it as HTML.
-    // stupid simple and probably a bad idea. but #weball, and as of when this is implemented, uploading files 
+    // stupid simple and probably a bad idea. but #weball, and as of when this is implemented, uploading files requires
+    // an account with the permission to do so, so this shouldn't be abused (fingers crossed)
     [HttpGet]
     [ActionName("site")]
     public async Task<IActionResult> Site(string file)
