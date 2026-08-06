@@ -120,7 +120,8 @@ namespace SuperCoolWebServer
                 {
                     opt.InputFormatters.Add(new RawRequestBodyFormatter(mimeType));
                 }
-                opt.InputFormatters.Insert(0, new RawRequestBodyFormatter("image/gif"));
+                // opt.InputFormatters.Insert(0, new RawRequestBodyFormatter("image/gif"));
+                opt.AllowEmptyInputInBodyModelBinding = false;
             });
 
             RateLimiters.SetupRateLimiters(builder);
@@ -225,6 +226,7 @@ namespace SuperCoolWebServer
                 FileProvider = new PhysicalFileProvider(Path.GetFullPath("./frontend")),
                 RequestPath = "/frontend"
             });
+            app.MapStaticAssets();
 
             if (app.Environment.IsDevelopment())
                 app.Run();

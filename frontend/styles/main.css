@@ -1,5 +1,6 @@
 body {
-    margin: 0px;
+    margin: 0 !important;
+    padding: 8px 8px 0 8px;
     min-height: 100vh;
     overscroll-behavior-y: none;
     display: flex;
@@ -19,7 +20,6 @@ body {
 
 /*Pictochat stylings*/
 .pictochat-window {
-    margin: 8px;
     max-width: 90%;
     min-width: 50%;
 }
@@ -30,6 +30,7 @@ body {
 /*Input box stylings*/
 details {
     min-width: fit-content;
+    margin: 4px;
 }
 details:open > summary {
     width: unset;
@@ -87,7 +88,7 @@ details > summary {
     height: 84px;
 }
 
-.slim-button {
+.button-slim {
     height: 24px;
     margin-top: 2px;
     font-size: smaller;
@@ -97,6 +98,30 @@ details > summary {
     width: 100vw;
     justify-items: center;
     align-content: center;
+}
+
+.ds-div {
+    width: fit-content;
+    background: repeating-linear-gradient(
+            var(--color-ds-grid-border),
+            var(--color-ds-grid-border) 2px,
+            oklab(0.795294 -0.0129662 -0.0228078) 2px,
+            oklab(0.795294 -0.0129662 -0.0228078) 4px
+    );
+    border: 2px solid black;
+    padding: 0 8px 0 8px;
+    margin-top: 16px;
+}
+
+.permission-selector {
+    max-width: calc(3.25 * var(--width-button));
+    display: flex;
+    align-self: center;
+    gap: 8px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-self: center;
+    justify-content: center;
 }
 
 /* Uppy mangling */

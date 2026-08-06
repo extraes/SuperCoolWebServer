@@ -1,7 +1,9 @@
 namespace SuperCoolWebServer.Models;
 
+[Flags]
 public enum Permissions : long
 {
+    None = 0,
     // Used by filestore
     UploadFiles = 1 << 0,
     ListFiles = 1 << 1,

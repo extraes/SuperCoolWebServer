@@ -1,0 +1,58 @@
+@using Microsoft.AspNetCore.Antiforgery
+@using SuperCoolWebServer.Models
+
+@code {
+    [Parameter] public required SuperCoolUser User { get; init; }
+    [Parameter] public required AntiforgeryTokenSet AfTokens { get; init; }
+}
+
+<div class="pictochat-message">
+    <script type="module">
+    import { UserManagement } from "/Views/UserManagement.razor.js";
+
+    UserManagement.extraHeaders["@AfTokens.HeaderName"] = "@AfTokens.RequestToken";
+    window.UserManagement = UserManagement;
+    </script>
+
+    <header class="ds-slate-50">System</header>
+    <div>
+        <details style="justify-self: center;">
+            <summary class="ds-green-50">Create user</summary>
+            <div class="ds-repeating">
+                <span> </span>
+                <label>
+                    <span class="ds-div">Username</span>
+                    <div class="input-wrapper">
+                        <div class="input-before"></div>
+                        <input id="create-user-username" type="text"/>
+                        <div class="input-after"></div>
+                    </div>
+                </label>
+                
+                <span class="ds-div">Permissions</span>
+                <div class="permission-selector">
+                    @foreach (Permissions perm in Enum.GetValues<Permissions>())
+                    {
+                        if (perm == Permissions.None)
+                            continue; // lol
+                        
+                        <button
+                            class="create-user-permission-button ds-red" value="@((long)perm)"
+                            onclick="UserManagement.createUserTogglePermission(@((long)perm))">
+                        @perm.ToString()
+                        </button>
+                    }
+                </div>
+
+                <button id="create-user-button" onclick="UserManagement.CreateUser()">Create user</button>
+                
+                <div class="alert" style="display:none;">
+                    <span id="create-user-result"></span>
+                </div>
+                
+            </div>
+        </details>
+
+
+    </div>
+</div>

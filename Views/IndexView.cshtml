@@ -3,10 +3,12 @@
 @using SuperCoolWebServer.Models
 
 @{
-    const string FILESTORE_KEY = "filestoreAuth";
+    var antiforgery = ViewContext.HttpContext.RequestServices.GetRequiredService<IAntiforgery>();
+    var tokens = antiforgery.GetAndStoreTokens(Context);
 }
 
 <!DOCTYPE html>
+<html lang="en">
 <head>
     <title>top text</title>
     
@@ -22,7 +24,7 @@
 <body class="ds-grid">
 
 <div class="pictochat-window">
-    <div class="pictochat-message pictochat-enter-highlight">Now joining..</div>
+    <div class="pictochat-message pictochat-enter-highlight">Now joining...</div>
     <div class="pictochat-message">
         <header class="ds-darkpurple-50">extraes</header>
         <span>
@@ -55,47 +57,47 @@
     <summary>If you're here to upload something :o</summary>
     <div class="ds-repeating">
         @{
-        var userManager = Context.RequestServices.GetRequiredService<UserManager<SuperCoolUser>>();
-        var user = await userManager.GetUserAsync(Context.User);
-        if (user is null)
-        {
-            <div class="info ds-orange">
-                <div class="info-square">
-                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAUKADAAQAAAABAAAAUAAAAAAx4ExPAAAD+UlEQVR4Ae2bi27kMAhFJ9X+d9Uvnw7b0iAKGPA7TaSuHdvAvSd2pppqj+fretxXmsBbOjIR+HEcD/i50jUMIAVH+7vDHALwSsD4Ax8CkBe90v0UgO8X+tyaAvDegQECV37/AYapOxDg7g54OEB8/1FwO4P8h6eRGsIxaNEwHevVBw0j67Xw8X8HavCggDVXEpCJzcSUdPScdx1hMNXamLXTWtfqDtAyQ4vXGuN14J6PYb3aWpind/vzDuRGNAM4ztfXCIVcmLcmz4zY4/m6tMIeUyWQmKO0DjTgWqrHE0fXj+6bAFGMZAznoG1lUqvTKj/V3Krv+hApGdCMR0VqdVrlj+rxrHftQJrIMqMBoPGevlajVX6PBu8a1w6kycBEbyNafg0s1Te6HwaIAjWTOF/bavlXg5gGCICoSdqvhYfxWs6VILrfgShaM4Wme7RYm+aeoYPWx75rB1IDtI9JererwJJ8ugDywNkQVwLqOsIasJWM8Ic86t61A29Q+uNwAYRwCaK2M/Vy15txA9Ss/3WIIYDSLgSwfxliCCDAuiEChfMKA4TQG2IlwBviCdD1e+C5/HdPe/9pu/R3hvKIVoNGtqxH85b61QChgGYwY0rLVTIizWfqS3mssSYAoYBkPGJAireER+YiOiJ5YW3qQ0QqIon0QvGuk+p6xnrm//mzpkdIZg2Il+Birog5KU8kHmu2bJsdYRQlGZKMw3ppLebRYnDeannemlxWHZhrDhCSUgOaeLoGYvDS1uP8am2XI5yFkI2bCbXZh0jEhLT7doQHnqcAjMBefe1wgFfaffcObLC9h+9ArnnXdx/6GApQOr4oZNd2KMBdIVm6pwLc/fgC2KkArSe7y9wNkDyp4/XFB/xErhvgNy0KjvZLMG+ACiHvbuzyZYKiafpwZGehWIh56v+R4XEJgBkwCKi2XQ4gwtCeOs7XGo/EW7twKYAUDhVNxyPGW65FDfzBLgWQG0bRfLz2nkOQ8mm1YZzGLw1QMmaNUWPWuto5CrHL30QsgR/fv6i+k0827WlbeXrDKmnC+sMBcigloXQ9iqZjvfolXahl+SOMQnuByuSlmpYESAVmDLaIAQ18F0q6lgMoiWwBJJKDg7NilwNoie01FwHGNVwSYA0QDgjvtZOxLcAekBAWbzV4sG4rgCOhARwLHMzDtQ3AEfA8wL6wnf9uA/CU7O8BEA4+A8mquBxAMBwxKa2N5rAAlea2+UpfAiWN8R1XAlA7Px2gBCFrCuG1zFnSstwRLgm25jk4BGrF1M5dCuAIYBz41gCjwPgO5TAy99PfgRnRmZge8EDHVgCzELJxnge19RHWDPYExmsuCRDebVEI0fUcRPb+E+28arlezT4YAAAAAElFTkSuQmCC"
-                         alt="Drawn angry face holding an outline of a gun"/>
-                </div>
-                <div class="info-container">
-                    <div style="display: flex">
-                        <div class="info-label slim-label">Who are you!?!? >:I</div>
+            var userManager = Context.RequestServices.GetRequiredService<UserManager<SuperCoolUser>>();
+            var user = await userManager.GetUserAsync(Context.User);
+            if (user is null)
+            {
+                <div class="info ds-orange">
+                    <div class="info-square">
+                        <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAFAAAABQCAYAAACOEfKtAAAAAXNSR0IArs4c6QAAAERlWElmTU0AKgAAAAgAAYdpAAQAAAABAAAAGgAAAAAAA6ABAAMAAAABAAEAAKACAAQAAAABAAAAUKADAAQAAAABAAAAUAAAAAAx4ExPAAAD+UlEQVR4Ae2bi27kMAhFJ9X+d9Uvnw7b0iAKGPA7TaSuHdvAvSd2pppqj+fretxXmsBbOjIR+HEcD/i50jUMIAVH+7vDHALwSsD4Ax8CkBe90v0UgO8X+tyaAvDegQECV37/AYapOxDg7g54OEB8/1FwO4P8h6eRGsIxaNEwHevVBw0j67Xw8X8HavCggDVXEpCJzcSUdPScdx1hMNXamLXTWtfqDtAyQ4vXGuN14J6PYb3aWpind/vzDuRGNAM4ztfXCIVcmLcmz4zY4/m6tMIeUyWQmKO0DjTgWqrHE0fXj+6bAFGMZAznoG1lUqvTKj/V3Krv+hApGdCMR0VqdVrlj+rxrHftQJrIMqMBoPGevlajVX6PBu8a1w6kycBEbyNafg0s1Te6HwaIAjWTOF/bavlXg5gGCICoSdqvhYfxWs6VILrfgShaM4Wme7RYm+aeoYPWx75rB1IDtI9JererwJJ8ugDywNkQVwLqOsIasJWM8Ic86t61A29Q+uNwAYRwCaK2M/Vy15txA9Ss/3WIIYDSLgSwfxliCCDAuiEChfMKA4TQG2IlwBviCdD1e+C5/HdPe/9pu/R3hvKIVoNGtqxH85b61QChgGYwY0rLVTIizWfqS3mssSYAoYBkPGJAireER+YiOiJ5YW3qQ0QqIon0QvGuk+p6xnrm//mzpkdIZg2Il+Birog5KU8kHmu2bJsdYRQlGZKMw3ppLebRYnDeannemlxWHZhrDhCSUgOaeLoGYvDS1uP8am2XI5yFkI2bCbXZh0jEhLT7doQHnqcAjMBefe1wgFfaffcObLC9h+9ArnnXdx/6GApQOr4oZNd2KMBdIVm6pwLc/fgC2KkArSe7y9wNkDyp4/XFB/xErhvgNy0KjvZLMG+ACiHvbuzyZYKiafpwZGehWIh56v+R4XEJgBkwCKi2XQ4gwtCeOs7XGo/EW7twKYAUDhVNxyPGW65FDfzBLgWQG0bRfLz2nkOQ8mm1YZzGLw1QMmaNUWPWuto5CrHL30QsgR/fv6i+k0827WlbeXrDKmnC+sMBcigloXQ9iqZjvfolXahl+SOMQnuByuSlmpYESAVmDLaIAQ18F0q6lgMoiWwBJJKDg7NilwNoie01FwHGNVwSYA0QDgjvtZOxLcAekBAWbzV4sG4rgCOhARwLHMzDtQ3AEfA8wL6wnf9uA/CU7O8BEA4+A8mquBxAMBwxKa2N5rAAlea2+UpfAiWN8R1XAlA7Px2gBCFrCuG1zFnSstwRLgm25jk4BGrF1M5dCuAIYBz41gCjwPgO5TAy99PfgRnRmZge8EDHVgCzELJxnge19RHWDPYExmsuCRDebVEI0fUcRPb+E+28arlezT4YAAAAAElFTkSuQmCC"
+                             alt="Drawn angry face holding an outline of a gun"/>
+                    </div>
+                    <div class="info-container">
+                        <div style="display: flex">
+                            <div class="info-label slim-label">Who are you!?!? >:I</div>
                         
-                        <button id="login-button" class="slim-button" onclick="saveFilestoreAuth()">Log in!</button>
-                    </div>
+                            <button id="login-button" class="button-slim" onclick="saveFilestoreAuth()">Log in!</button>
+                        </div>
                     
-                    <div class="input-wrapper">
-                        <span>Username: </span>
-                        <input id="username-input" type="text" class="input-sm"/>
-                    </div>
+                        <div class="input-wrapper">
+                            <span>Username: </span>
+                            <input id="username-input" type="text" class="input-sm"/>
+                        </div>
 
-                    <div class="input-wrapper">
-                        <span>Password: </span>
-                        <input id="password-input" type="text" class="input-sm"/>
+                        <div class="input-wrapper">
+                            <span>Password: </span>
+                            <input id="password-input" type="text" class="input-sm"/>
+                        </div>
                     </div>
                 </div>
-            </div>
-        }
-        else if (user.Permissions.HasFlag(Permissions.UploadFiles))
-        {
-            <div>
-                <span>Welcome back @user.UserName  :3</span>
-                <button class="slim-button ds-red-50" onclick="logOut()">Not you? Log out</button>
-            </div>
+            }
+            else if (user.Permissions.HasFlag(Permissions.UploadFiles))
+            {
+                <div>
+                    <span>Welcome back @user.UserName  :3</span>
+                    <button class="button-slim ds-red-50" onclick="logOut()">Not you? Log out</button>
+                </div>
             
-            <text><!-- modified chatgpt code LOL -->
-                <!-- Uppy Dashboard --></text>
-            <div class="uploader" id="drag-drop-area"></div>
+                <text><!-- modified chatgpt code LOL -->
+                    <!-- Uppy Dashboard --></text>
+                <div class="uploader" id="drag-drop-area"></div>
 
-            @:<!-- Initialize Uppy -->
-            <script>
+                @:<!-- Initialize Uppy -->
+                <script>
             document.addEventListener('DOMContentLoaded', function () {
                 const uppy = new Uppy.Uppy({
                     restrictions: {
@@ -112,7 +114,6 @@
                     })
                     .use(Uppy.Tus, {
                         endpoint: '/files', // Endpoint for file upload
-                        headers: {authorization: `Bearer ${cookieStore.get('@FILESTORE_KEY')}`},
                         chunkSize: 1024 * 1024 * 25 // 25mb to skate under cf req limits
                     });
         
@@ -121,7 +122,7 @@
                 });
             });
         </script>
-        }
+            }
         }
     </div>
 </details>
@@ -133,10 +134,6 @@
 </footer>
 
 <script>
-    @{
-        var antiforgery = ViewContext.HttpContext.RequestServices.GetRequiredService<IAntiforgery>();
-        var tokens = antiforgery.GetAndStoreTokens(Context);
-    }
     async function saveFilestoreAuth() {
         let password = $("#password-input").val();
         let username = $("#username-input").val();
@@ -144,7 +141,10 @@
         
         let result = await fetch(`auth/login`, {
             method: "POST",
-            body: JSON.stringify({ username, password }),
+            body: JSON.stringify({
+                Username: username,
+                Password: password
+            }),
             headers: {
                 "Content-Type": "application/json",
                 "@tokens.HeaderName": "@tokens.RequestToken"
@@ -185,3 +185,4 @@
     
 </script>
 </body>
+</html>

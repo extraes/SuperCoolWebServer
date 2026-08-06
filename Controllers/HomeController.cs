@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 
 namespace SuperCoolWebServer.Controllers;
 
@@ -9,5 +10,12 @@ public class HomeController : Controller
     public IActionResult Index()
     {
         return View("/Views/IndexView.cshtml");
+    }
+
+    [Authorize]
+    [Route("dashboard")]
+    public IActionResult Dashboard()
+    {
+        return View("/Views/DashboardView.cshtml");
     }
 }

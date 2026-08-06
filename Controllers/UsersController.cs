@@ -1,7 +1,9 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Snowflakes;
+using SuperCoolWebServer.Auth;
 using SuperCoolWebServer.Data;
 using SuperCoolWebServer.Models;
 
@@ -17,12 +19,13 @@ public class UsersController : Controller
     [Consumes("application/json")]
     [Authorize(Policy = nameof(Permissions.ManageUsers))]
     public async Task<IActionResult> Create(
-        [FromBody] AuthModels.UserCreationRequest creationReq,
+        [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Disallow)] AuthModels.UserCreationRequest creationReq,
         [FromServices] SnowflakeGenerator<long> snowflakeGenerator,
         [FromServices] UserManager<SuperCoolUser> userManager)
     {
+        var validPermissions = PermissionsValidator.MakeValid(creationReq.Permissions);
         var caller = await userManager.GetUserAsync(HttpContext.User);
-        if (!caller!.Permissions.HasFlag(creationReq.Permissions)) // make sure given perms are less than what the user has
+        if (!caller!.Permissions.HasFlag(validPermissions)) // make sure given perms are less than what the user has
         {
             return Unauthorized($"Your permissions ({caller.Permissions}) are less than what you're trying to give that user.");
         }
@@ -37,7 +40,7 @@ public class UsersController : Controller
         {
             UserName = creationReq.Username,
             Id = snowflakeGenerator.NewSnowflake(),
-            Permissions = creationReq.Permissions
+            Permissions = validPermissions
         };
         var passwordStr = DataHelper.CreateRandomPassword();
         var result = await userManager.CreateAsync(newUser, passwordStr);

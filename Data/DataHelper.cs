@@ -47,13 +47,20 @@ public static class DataHelper
         const int PASSWORD_LENGTH = 24;
         Span<char> password = stackalloc char[PASSWORD_LENGTH];
         string passwordString;
+
         do
         {
             RandomNumberGenerator.GetItems(alphabet, password);
             passwordString = new string(password);
         }
-        while (passwordString.All(char.IsLetterOrDigit));
+        while (!IsPasswordValid(passwordString));
 
         return passwordString;
+
+        bool IsPasswordValid(string pwStr)
+            => pwStr.ContainsAnyInRange('a', 'z')
+               && pwStr.ContainsAnyInRange('A', 'Z')
+               && pwStr.ContainsAnyInRange('0', '9')
+               && pwStr.Any(char.IsSymbol);
     }
 }
