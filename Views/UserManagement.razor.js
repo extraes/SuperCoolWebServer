@@ -32,9 +32,9 @@ export class UserManagement {
                 button.classList.add("ds-red")
             }
         }
-        
     }
-    static async CreateUser() {
+    
+    static async createUser() {
         let button = $("#create-user-button");
         let input = $("#create-user-username");
         let output = $("#create-user-result");
@@ -62,7 +62,7 @@ export class UserManagement {
         }
         else
         {
-            // Blink the login button in the stuuupidest way possible
+            // Blink the button in the stuuupidest way possible
             for (let i = 0; i < 10; i++) {
                 if (i % 2 === 0)
                     setTimeout(() => { button.addClass("ds-red") }, i * 250);
@@ -72,6 +72,35 @@ export class UserManagement {
 
             output.parent().removeAttr("style");
             output.text(`Failed! Status code ${result.status}\n${await result.text()}`);
+        }
+    }
+    
+    static async findUserByName() {
+        
+    }
+    
+    static async findUserById() {
+        let input = $("#find-user-id");
+        let output = $("#create-user-result");
+
+        let reqHeaders = { "Content-Type": "application/json", };
+        reqHeaders = Object.assign(reqHeaders, this.extraHeaders);
+
+        let result = await fetch(`users/FindById?id=${input.val()}}`, {
+            method: "GET",
+            headers: reqHeaders
+        });
+        
+        output.parent().removeAttr("style");
+        if (result.ok) {
+            let resJson = await result.json();
+            output.val(``)
+        }
+        else {
+            // Blink in the stuuupidest way possible
+            
+            
+            
         }
     }
 }

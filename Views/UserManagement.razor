@@ -6,20 +6,18 @@
     [Parameter] public required AntiforgeryTokenSet AfTokens { get; init; }
 }
 
-<div class="pictochat-message">
-    <script type="module">
+<script type="module">
     import { UserManagement } from "/Views/UserManagement.razor.js";
 
     UserManagement.extraHeaders["@AfTokens.HeaderName"] = "@AfTokens.RequestToken";
     window.UserManagement = UserManagement;
-    </script>
-
+</script>
+<div class="pictochat-message">
     <header class="ds-slate-50">System</header>
     <div>
         <details style="justify-self: center;">
             <summary class="ds-green-50">Create user</summary>
             <div class="ds-repeating">
-                <span> </span>
                 <label>
                     <span class="ds-div">Username</span>
                     <div class="input-wrapper">
@@ -39,17 +37,49 @@
                         <button
                             class="create-user-permission-button ds-red" value="@((long)perm)"
                             onclick="UserManagement.createUserTogglePermission(@((long)perm))">
-                        @perm.ToString()
+                            @perm.ToString()
                         </button>
                     }
                 </div>
 
-                <button id="create-user-button" onclick="UserManagement.CreateUser()">Create user</button>
+                <button id="create-user-button" onclick="UserManagement.createUser()">Create user</button>
                 
                 <div class="alert" style="display:none;">
                     <span id="create-user-result"></span>
                 </div>
                 
+            </div>
+        </details>
+        
+        <details style="justify-self: center;">
+            <summary class="ds-green-50">Find user</summary>
+            <div class="ds-repeating">
+                <label>
+                    <span class="ds-div">Username</span>
+                    <div class="input-wrapper">
+                        <div class="input-before"></div>
+                        <input id="find-user-username" type="text"/>
+                        <div class="input-after"></div>
+                        
+                        <button class="button-square" onclick="UserManagement.findUserByName()">></button>
+                    </div>
+                </label>
+                
+                
+                <label>
+                    <span class="ds-div">Number ID</span>
+                    <div class="input-wrapper">
+                        <div class="input-before"></div>
+                        <input id="find-user-id" type="text"/>
+                        <div class="input-after"></div>
+                        
+                        <button class="button-square" onclick="UserManagement.findUserById()">></button>
+                    </div>
+                </label>
+                
+                <div class="alert" style="display:none;">
+                    <span id="find-user-result"></span>
+                </div>
             </div>
         </details>
 
