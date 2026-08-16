@@ -88,6 +88,7 @@ public class UsersController : Controller
         {
             return NotFound($"User with id {setReq.TargetId} does not exist.");
         }
+        
         var passwordChangeToken =  await userManager.GeneratePasswordResetTokenAsync(target);
         var result = await userManager.ChangePasswordAsync(target!, passwordChangeToken, setReq.NewPassword);
         

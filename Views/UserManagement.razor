@@ -14,7 +14,7 @@
 </script>
 <div class="pictochat-message">
     <header class="ds-slate-50">System</header>
-    <div>
+    <div style="display: grid;">
         <details style="justify-self: center;">
             <summary class="ds-green-50">Create user</summary>
             <div class="ds-repeating">
@@ -22,7 +22,7 @@
                     <span class="ds-div">Username</span>
                     <div class="input-wrapper">
                         <div class="input-before"></div>
-                        <input id="create-user-username" type="text"/>
+                        <input id="create-user-username" type="text" />
                         <div class="input-after"></div>
                     </div>
                 </label>
@@ -54,31 +54,70 @@
         <details style="justify-self: center;">
             <summary class="ds-green-50">Find user</summary>
             <div class="ds-repeating">
-                <label>
-                    <span class="ds-div">Username</span>
-                    <div class="input-wrapper">
-                        <div class="input-before"></div>
-                        <input id="find-user-username" type="text"/>
-                        <div class="input-after"></div>
-                        
-                        <button class="button-square" onclick="UserManagement.findUserByName()">></button>
-                    </div>
-                </label>
                 
-                
-                <label>
-                    <span class="ds-div">Number ID</span>
-                    <div class="input-wrapper">
-                        <div class="input-before"></div>
-                        <input id="find-user-id" type="text"/>
-                        <div class="input-after"></div>
-                        
-                        <button class="button-square" onclick="UserManagement.findUserById()">></button>
-                    </div>
-                </label>
-                
+                <!--suppress JSDeprecatedSymbols -->
+                <form onsubmit="event.preventDefault(); UserManagement.findUserByName()">
+                    <label>
+                        <span class="ds-div">Username</span>
+                        <div class="input-wrapper">
+                            <div class="input-before"></div>
+                            <input id="find-user-username" type="text" />
+                            <div class="input-after"></div>
+
+                            <button id="find-user-name-btn" type="submit" class="button-square" >></button>
+                        </div>
+                    </label>
+                </form>
+
+
+                <!--suppress JSDeprecatedSymbols -->
+                <form onsubmit="event.preventDefault(); UserManagement.findUserById()">
+                    <label>
+                        <span class="ds-div">Number ID</span>
+                        <div class="input-wrapper">
+                            <div class="input-before"></div>
+                            <input id="find-user-id" type="text"/>
+                            <div class="input-after"></div>
+
+                            <button id="find-user-id-btn" type="submit" class="button-square">></button>
+                        </div>
+                    </label>
+                </form>
+
                 <div class="alert" style="display:none;">
                     <span id="find-user-result"></span>
+                </div>
+            </div>
+        </details>
+        
+        <details style="justify-self: center;">
+            <summary class="ds-green-50">Set user's password</summary>
+            <div class="ds-repeating">
+                <!--suppress JSDeprecatedSymbols -->
+                <form onsubmit="event.preventDefault(); UserManagement.findUserById()">
+                    <label>
+                        <span class="ds-div">User's ID</span>
+                        <div class="input-wrapper">
+                            <div class="input-before"></div>
+                            <input id="set-pwd-id" type="text"/>
+                            <div class="input-after"></div>
+                        </div>
+                    </label>
+
+                    <label>
+                        <span class="ds-div">New password</span>
+                        <div class="input-wrapper">
+                            <div class="input-before"></div>
+                            <input id="set-pwd-password" type="text"/>
+                            <div class="input-after"></div>
+                        </div>
+                    </label>
+
+                    <button id="set-pwd-btn" type="submit">Set password</button>
+                </form>
+
+                <div class="alert" style="display:none;">
+                    <span id="set-pwd-result"></span>
                 </div>
             </div>
         </details>
@@ -86,3 +125,4 @@
 
     </div>
 </div>
+
