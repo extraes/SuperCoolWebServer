@@ -8,5 +8,6 @@ namespace SuperCoolWebServer.Models;
 // also the name is funny.
 public class SuperCoolUser : IdentityUser<long>
 {
+    public required long CreatedBy { get; init; }
     public Permissions Permissions { get; set; }
 }

@@ -10,7 +10,6 @@ using CloudFlare.Client.Enumerators;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.OpenApi.Models;
 using Snowflakes;
 using SuperCoolWebServer.Auth;
 using SuperCoolWebServer.Data;
@@ -132,6 +131,20 @@ namespace SuperCoolWebServer
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
+                // I'm ACTIVELY DEVELOPING and Firefox decides to CACHE LOCALHOST.
+                // Fucking moronic.
+                app.Use(async (ctx, next) =>
+                {
+                    // MSDN says to not write to response directly from middleware.
+                    // SRC: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/
+                    ctx.Response.OnStarting(() =>
+                    {
+                        ctx.Response.Headers.CacheControl = "max-age=0";
+                        return Task.CompletedTask;
+                    });
+                    await next.Invoke();
+                });
+                
                 // Give Swagger the ability to get an antiforgery token
                 app.MapGet("/_af/token", (HttpContext ctx, IAntiforgery antiforgery) =>
                 {

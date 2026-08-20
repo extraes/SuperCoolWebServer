@@ -10,7 +10,7 @@ public class RedirectController : Controller
 {
     [HttpGet]
     [ActionName("go")]
-    public IActionResult GotoLink( string lnkName)
+    public IActionResult GotoLink(string lnkName)
     {
         if (string.IsNullOrEmpty(lnkName) || lnkName.Any(c => c is '/' or '\\'))
             return BadRequest();
@@ -25,7 +25,7 @@ public class RedirectController : Controller
 
     [HttpPut]
     [ActionName("set")]
-    [Authorize(Policy = nameof(Permissions.CreateLinks))]
+    [Authorize(Policy = nameof(Permissions.ManageLinks))]
     public IActionResult SetLink(string lnkName, string target)
     {
         if (string.IsNullOrEmpty(lnkName) || lnkName.Any(c => c == '/' || c == '\\'))
@@ -37,5 +37,19 @@ public class RedirectController : Controller
         string url = Request.GetDisplayUrl().Split('?')[0];
 
         return Created(url.Replace("set", "go"), null);
+    }
+
+    [HttpDelete]
+    [ActionName("unset")]
+    [Authorize(Policy = nameof(Permissions.ManageLinks))]
+    public IActionResult UnsetLink(string lnkName)
+    {
+        if (string.IsNullOrEmpty(lnkName) || lnkName.Any(c => c == '/' || c == '\\'))
+            return BadRequest();
+
+        if (!PersistentData.values.links.Remove(lnkName))
+            return NotFound();
+
+        return Ok();
     }
 }

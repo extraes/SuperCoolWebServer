@@ -38,6 +38,7 @@ public class UsersController : Controller
         
         var newUser = new SuperCoolUser()
         {
+            CreatedBy = caller.Id,
             UserName = creationReq.Username,
             Id = snowflakeGenerator.NewSnowflake(),
             Permissions = validPermissions
@@ -47,7 +48,7 @@ public class UsersController : Controller
         if (result.Succeeded)
             return Ok(new
             {
-                user = newUser,
+                user = new TransportUser(newUser),
                 password = passwordStr,
                 message = "Please change your password when you log in :)"
             }); 
@@ -110,7 +111,7 @@ public class UsersController : Controller
             return NotFound();
         }
         
-        return Ok(existingUser);
+        return Ok(new TransportUser(existingUser));
     }
     
     [HttpGet]
@@ -126,6 +127,6 @@ public class UsersController : Controller
             return NotFound();
         }
         
-        return Ok(existingUser);
+        return Ok(new TransportUser(existingUser));
     }
 }

@@ -32,7 +32,7 @@ public class IpAccessController : Controller
 
     [HttpPut]
     [ActionName("create")]
-    [Authorize(Policy = nameof(Permissions.CreateLinks))]
+    [Authorize(Policy = nameof(Permissions.ManageLinks))]
     public IActionResult CreateApp(string appId, string appAuth, string creationAuth)
     {
         if (PersistentData.values.applicationAuth.ContainsKey(appId))

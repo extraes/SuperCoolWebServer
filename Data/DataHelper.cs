@@ -21,9 +21,11 @@ public static class DataHelper
         var passwordString = CreateRandomPassword();
 
         Logger.Put($"Creating admin user w/ Username 'Admin' and password '{passwordString}'");
+        long adminId = snowflakeGen.NewSnowflake();
         var result = await userManager.CreateAsync(new SuperCoolUser()
         {
-            Id = snowflakeGen.NewSnowflake(),
+            Id = adminId,
+            CreatedBy = adminId,
             Permissions = Permissions.Administrator,
             UserName = "Admin",
         }, passwordString);

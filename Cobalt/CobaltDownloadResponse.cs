@@ -9,10 +9,10 @@ public class CobaltDownloadResponse : CobaltResponse
     /// url for the cobalt tunnel, or redirect to an external link
     /// </summary>
     [JsonPropertyName("url")]
-    public string Url { get; set; }
+    public string Url { get; init; } = null!;
     /// <summary>
     /// cobalt-generated filename for the file being downloaded
     /// </summary>
     [JsonPropertyName("filename")]
-    public string Filename { get; set; }
+    public string Filename { get; init; } = null!;
 }
