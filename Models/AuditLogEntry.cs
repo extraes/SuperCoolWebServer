@@ -1,6 +1,8 @@
+using SuperCoolWebServer.Models;
+
 namespace SuperCoolWebServer.Data;
 
-public class AuditLogEntry
+public class AuditLogEntry : SnowflakeObject
 {
-    public required long Id { get; init; }
+    
 }

@@ -10,6 +10,7 @@ using CloudFlare.Client.Enumerators;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Snowflakes;
 using SuperCoolWebServer.Auth;
 using SuperCoolWebServer.Data;
@@ -216,7 +217,7 @@ namespace SuperCoolWebServer
             {
                 var services = scope.ServiceProvider;
                 var context = services.GetRequiredService<DataContext>();
-                context.Database.EnsureCreated();
+                context.Database.Migrate();
                 
                 DataHelper.Initialize(services.GetRequiredService<UserManager<SuperCoolUser>>(),
                     services.GetRequiredService<SnowflakeGenerator<long>>())
