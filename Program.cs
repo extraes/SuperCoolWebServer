@@ -57,6 +57,7 @@ namespace SuperCoolWebServer
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<DataContext>();
+            builder.Services.AddScoped<AuditLogWriter>();
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             builder.Services.AddAuthorization(options =>
@@ -286,9 +287,24 @@ namespace SuperCoolWebServer
                             //Providing New File name with extension
                             //string filestoreDir = @"C:\tusfiles\";
 
-                            await using var fileStream2 = new FileStream(Path.Combine(Config.values.filestoreDir, filename), FileMode.Create, FileAccess.Write);
+                            var destination = Path.Combine(Config.values.filestoreDir, filename);
+                            var existed = File.Exists(destination);
+                            await using var fileStream2 = new FileStream(destination, FileMode.Create, FileAccess.Write);
                             await fileStream.CopyToAsync(fileStream2);
-                            
+
+                            var auditLog = httpCtx.RequestServices.GetRequiredService<AuditLogWriter>();
+                            await auditLog.WriteAsync(
+                                httpCtx, null,
+                                existed
+                                    ? AuditLogStrings.Actions.FILE_OVERWRITTEN
+                                    : AuditLogStrings.Actions.UPLOADED_FILE_TUS,
+                                AuditLogStrings.Entities.FILE,
+                                details: new
+                                {
+                                    Filename = filename,
+                                    SizeBytes = fileStream2.Length,
+                                    UploadMethod = "tus",
+                                });
                         }
                     }
                 };

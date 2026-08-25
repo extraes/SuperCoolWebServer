@@ -203,8 +203,9 @@ public partial class FileStorageController : Controller
     [Authorize(Policy = nameof(Permissions.UploadFiles))]
     public async Task<IActionResult> Upload(
         [FromBody] Stream fileStream,
-        [FromServices] DataContext db,
-        [FromServices] UserManager<SuperCoolUser> userManager, string file, string auth, bool overwrite = false)
+        [FromServices] UserManager<SuperCoolUser> userManager,
+        [FromServices] AuditLogWriter auditLog,
+        string file, string auth, bool overwrite = false)
     {
         if (!Request.Headers.TryGetValue("cf-connecting-ip", out var ip))
             ip = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
@@ -219,7 +220,8 @@ public partial class FileStorageController : Controller
         EnsureDirectory();
 
         string path = Path.Combine(BaseDirectory, file);
-        if (System.IO.File.Exists(path) && !overwrite)
+        var existed = System.IO.File.Exists(path);
+        if (existed && !overwrite)
             return StatusCode(409);
 
         Logger.Put($"IP {ip} is uploading file {file}", LogType.Debug);
@@ -229,14 +231,17 @@ public partial class FileStorageController : Controller
         await fileStream.CopyToAsync(fs);
 
         Logger.Put($"IP {ip} uploaded {file} that is {fs.Length / 1024} KB long", LogType.Debug);
-        
-        var logEntry = new AuditLogEntry()
-        {
-            Action = AuditLogStrings.UPLOADED_FILE_MVC,
-            Id = user.Id,
-            
-        }
-        await db.AuditLogEntries.AddAsync()
+        await auditLog.WriteAsync(
+            HttpContext,
+            actorUserId: user.Id,
+            action: existed
+                ? AuditLogStrings.Actions.FILE_OVERWRITTEN
+                : AuditLogStrings.Actions.UPLOADED_FILE_MVC, entityType: AuditLogStrings.Entities.FILE, details: new
+            {
+                Filename = file,
+                SizeBytes = fs.Length,
+                UploadMethod = "mvc",
+            });
 
         string url = Request.GetDisplayUrl().Split('?')[0];
         url = portRegex.Replace(url, "");
