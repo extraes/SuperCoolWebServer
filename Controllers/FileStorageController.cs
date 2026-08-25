@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Html;
+﻿using System.ComponentModel;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -7,8 +8,10 @@ using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Web;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using SuperCoolWebServer.Auth;
+using SuperCoolWebServer.Data;
 using SuperCoolWebServer.Models;
 using Xabe.FFmpeg;
 
@@ -37,17 +40,29 @@ public partial class FileStorageController : Controller
         
         return Content(finf.Length.ToString());
     }
-    
+
     [HttpGet]
     [ActionName("list")]
     [Authorize(Policy = nameof(Permissions.ListFiles))]
-    public IActionResult ListAll(string file)
+    public IActionResult ListAll(
+        [Description("Used as a wildcard-supporting search string here. Use an asterisk to get all files.")]
+        string file,
+        bool oldestFirst)
     {
-        string[] files = Directory.Exists(BaseDirectory)
-            ? Directory.GetFiles(BaseDirectory)
-            : [];
+        if (Path.GetInvalidFileNameChars().Any(file.Contains)
+            || file.Contains('\\') || file.Contains('/'))
+            return BadRequest("Must be a valid string");
 
-        return Json(files);
+        if (!Directory.Exists(BaseDirectory))
+            return Json(Array.Empty<string>());
+        
+        var fileList = new DirectoryInfo(BaseDirectory).GetFiles();
+        if (oldestFirst)
+            fileList = fileList.OrderBy(f => f.LastWriteTime).ToArray();
+        else
+            fileList = fileList.OrderByDescending(f => f.LastWriteTime).ToArray();
+        
+        return Json(fileList);
     }
 
     [HttpGet]
@@ -186,13 +201,20 @@ public partial class FileStorageController : Controller
     [Consumes("application/octet-stream", IsOptional = true)]
     [RequestSizeLimit(1024 * MB_SIZE)]
     [Authorize(Policy = nameof(Permissions.UploadFiles))]
-    public async Task<IActionResult> Upload([FromBody] Stream fileStream, string file, string auth, bool overwrite = false)
+    public async Task<IActionResult> Upload(
+        [FromBody] Stream fileStream,
+        [FromServices] DataContext db,
+        [FromServices] UserManager<SuperCoolUser> userManager, string file, string auth, bool overwrite = false)
     {
         if (!Request.Headers.TryGetValue("cf-connecting-ip", out var ip))
             ip = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
 
         if (string.IsNullOrEmpty(file) || file.Any(c => c == '/' || c == '\\'))
             return BadRequest();
+        
+        var user = await userManager.GetUserAsync(HttpContext.User);
+        if (user is null)
+            return Unauthorized();
 
         EnsureDirectory();
 
@@ -207,6 +229,14 @@ public partial class FileStorageController : Controller
         await fileStream.CopyToAsync(fs);
 
         Logger.Put($"IP {ip} uploaded {file} that is {fs.Length / 1024} KB long", LogType.Debug);
+        
+        var logEntry = new AuditLogEntry()
+        {
+            Action = AuditLogStrings.UPLOADED_FILE_MVC,
+            Id = user.Id,
+            
+        }
+        await db.AuditLogEntries.AddAsync()
 
         string url = Request.GetDisplayUrl().Split('?')[0];
         url = portRegex.Replace(url, "");

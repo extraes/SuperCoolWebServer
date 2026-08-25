@@ -1,0 +1,128 @@
+@using Microsoft.AspNetCore.Antiforgery
+@using SuperCoolWebServer.Models
+
+@code {
+    [Parameter] public required SuperCoolUser User { get; init; }
+    [Parameter] public required AntiforgeryTokenSet AfTokens { get; init; }
+}
+
+<script type="module">
+    import { UserManagement } from "/Views/UserManagement.razor.js";
+
+    UserManagement.extraHeaders["@AfTokens.HeaderName"] = "@AfTokens.RequestToken";
+    window.UserManagement = UserManagement;
+</script>
+<div class="pictochat-message">
+    <header class="ds-slate-50">File List</header>
+    <div style="display: grid;">
+        <details style="justify-self: center;">
+            <summary class="ds-green-50">Create user</summary>
+            <div class="ds-repeating">
+                <label>
+                    <span class="ds-div">Username</span>
+                    <div class="input-wrapper">
+                        <div class="input-before"></div>
+                        <input id="create-user-username" type="text" />
+                        <div class="input-after"></div>
+                    </div>
+                </label>
+                
+                <span class="ds-div">Permissions</span>
+                <div class="permission-selector">
+                    @foreach (Permissions perm in Enum.GetValues<Permissions>())
+                    {
+                        if (perm == Permissions.None)
+                            continue; // lol
+                        
+                        <button
+                            class="create-user-permission-button ds-red" value="@((long)perm)"
+                            onclick="UserManagement.createUserTogglePermission(@((long)perm))">
+                            @perm.ToString()
+                        </button>
+                    }
+                </div>
+
+                <button id="create-user-button" onclick="UserManagement.createUser()">Create user</button>
+                
+                <div class="alert" style="display:none;">
+                    <span id="create-user-result"></span>
+                </div>
+                
+            </div>
+        </details>
+        
+        <details style="justify-self: center;">
+            <summary class="ds-green-50">Find user</summary>
+            <div class="ds-repeating">
+                
+                <!--suppress JSDeprecatedSymbols -->
+                <form onsubmit="event.preventDefault(); UserManagement.findUserByName()">
+                    <label>
+                        <span class="ds-div">Username</span>
+                        <div class="input-wrapper">
+                            <div class="input-before"></div>
+                            <input id="find-user-username" type="text" />
+                            <div class="input-after"></div>
+
+                            <button id="find-user-name-btn" type="submit" class="button-square" >></button>
+                        </div>
+                    </label>
+                </form>
+
+
+                <!--suppress JSDeprecatedSymbols -->
+                <form onsubmit="event.preventDefault(); UserManagement.findUserById()">
+                    <label>
+                        <span class="ds-div">Number ID</span>
+                        <div class="input-wrapper">
+                            <div class="input-before"></div>
+                            <input id="find-user-id" type="text"/>
+                            <div class="input-after"></div>
+
+                            <button id="find-user-id-btn" type="submit" class="button-square">></button>
+                        </div>
+                    </label>
+                </form>
+
+                <div class="alert" style="display:none;">
+                    <span id="find-user-result"></span>
+                </div>
+            </div>
+        </details>
+        
+        <details style="justify-self: center;">
+            <summary class="ds-green-50">Set user's password</summary>
+            <div class="ds-repeating">
+                <!--suppress JSDeprecatedSymbols -->
+                <form onsubmit="event.preventDefault(); UserManagement.findUserById()">
+                    <label>
+                        <span class="ds-div">User's ID</span>
+                        <div class="input-wrapper">
+                            <div class="input-before"></div>
+                            <input id="set-pwd-id" type="text"/>
+                            <div class="input-after"></div>
+                        </div>
+                    </label>
+
+                    <label>
+                        <span class="ds-div">New password</span>
+                        <div class="input-wrapper">
+                            <div class="input-before"></div>
+                            <input id="set-pwd-password" type="text"/>
+                            <div class="input-after"></div>
+                        </div>
+                    </label>
+
+                    <button id="set-pwd-btn" type="submit">Set password</button>
+                </form>
+
+                <div class="alert" style="display:none;">
+                    <span id="set-pwd-result"></span>
+                </div>
+            </div>
+        </details>
+
+
+    </div>
+</div>
+

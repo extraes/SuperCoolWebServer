@@ -61,8 +61,15 @@
 
     @if (user.Permissions.HasFlag(Permissions.ManageUsers))
     {
-        @* <UserManagement User=@User AfTokens=@tokens></UserManagement> *@
-
+        Write(await Html.RenderComponentAsync<UserManagement>(RenderMode.Static, new
+        {
+            User = user,
+            AfTokens = tokens
+        }));
+    }
+    
+    @if (user.Permissions.HasFlag(Permissions.ListFiles))
+    {
         Write(await Html.RenderComponentAsync<UserManagement>(RenderMode.Static, new
         {
             User = user,
