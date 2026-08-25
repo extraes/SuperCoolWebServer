@@ -53,7 +53,10 @@ public class AuthController : Controller
         [FromServices] AuditLogWriter auditLog)
     {
         var caller = await userManager.GetUserAsync(HttpContext.User);
-        var result = await userManager.ChangePasswordAsync(caller!, passReq.CurrentPassword, passReq.NewPassword);
+        if (caller is null)
+            return Unauthorized();
+        
+        var result = await userManager.ChangePasswordAsync(caller, passReq.CurrentPassword, passReq.NewPassword);
         
         if (!result.Succeeded)
             return BadRequest(result.Errors);

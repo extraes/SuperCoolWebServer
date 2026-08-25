@@ -19,6 +19,24 @@ public sealed class AuditLogWriter(
     {
         actorUserId ??= GetUserId(httpContext.User);
 
+        string json = JsonSerializer.Serialize(new
+        {
+            RequestId = httpContext.TraceIdentifier,
+            Data = details,
+        });
+
+        if (json.Length > AuditLogEntry.DETAILS_MAX_LENGTH)
+        {
+            json =JsonSerializer.Serialize(new
+            {
+                RequestId = httpContext.TraceIdentifier,
+                Data = new
+                {
+                    TruncatedData = json[..(AuditLogEntry.DETAILS_MAX_LENGTH - 1024)],
+                }
+            }); 
+        }
+        
         var entry = new AuditLogEntry
         {
             Id = snowflakeGenerator.NewSnowflake(),
@@ -26,12 +44,7 @@ public sealed class AuditLogWriter(
             Action = action,
             EntityType = entityType,
             EntityId = entityId,
-            DetailsJson = JsonSerializer.Serialize(new
-            {
-                RemoteIp = httpContext.Connection.RemoteIpAddress?.ToString(),
-                RequestId = httpContext.TraceIdentifier,
-                Data = details,
-            }),
+            DetailsJson = json,
         };
 
         await db.AuditLogEntries.AddAsync(entry, cancellationToken);

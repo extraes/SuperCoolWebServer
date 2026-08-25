@@ -56,7 +56,7 @@ public partial class FileStorageController : Controller
         if (!Directory.Exists(BaseDirectory))
             return Json(Array.Empty<string>());
         
-        var fileList = new DirectoryInfo(BaseDirectory).GetFiles();
+        var fileList = new DirectoryInfo(BaseDirectory).GetFiles(file);
         if (oldestFirst)
             fileList = fileList.OrderBy(f => f.LastWriteTime).ToArray();
         else

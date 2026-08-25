@@ -100,7 +100,8 @@ export class UserManagement {
         let reqHeaders = { };
         reqHeaders = Object.assign(reqHeaders, this.extraHeaders);
 
-        let result = await fetch(`users/findByName?username=${input.val()}`, {
+        
+        let result = await fetch(`users/findByName?username=${encodeURIComponent(input.val())}`, {
             method: "GET",
             headers: reqHeaders
         });
