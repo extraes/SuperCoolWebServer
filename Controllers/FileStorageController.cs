@@ -202,10 +202,12 @@ public partial class FileStorageController : Controller
     [RequestSizeLimit(1024 * MB_SIZE)]
     [Authorize(Policy = nameof(Permissions.UploadFiles))]
     public async Task<IActionResult> Upload(
-        [FromBody] Stream fileStream,
         [FromServices] UserManager<SuperCoolUser> userManager,
         [FromServices] AuditLogWriter auditLog,
-        string file, string auth, bool overwrite = false)
+        [FromBody] Stream fileStream,
+        string file,
+        string auth,
+        bool overwrite = false)
     {
         if (!Request.Headers.TryGetValue("cf-connecting-ip", out var ip))
             ip = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
@@ -231,17 +233,26 @@ public partial class FileStorageController : Controller
         await fileStream.CopyToAsync(fs);
 
         Logger.Put($"IP {ip} uploaded {file} that is {fs.Length / 1024} KB long", LogType.Debug);
-        await auditLog.WriteAsync(
-            HttpContext,
-            actorUserId: user.Id,
-            action: existed
-                ? AuditLogStrings.Actions.FILE_OVERWRITTEN
-                : AuditLogStrings.Actions.UPLOADED_FILE_MVC, entityType: AuditLogStrings.Entities.FILE, details: new
-            {
-                Filename = file,
-                SizeBytes = fs.Length,
-                UploadMethod = "mvc",
-            });
+        try
+        {
+
+            await auditLog.WriteAsync(
+                HttpContext,
+                actorUserId: user.Id,
+                action: existed
+                    ? AuditLogStrings.Actions.FILE_OVERWRITTEN
+                    : AuditLogStrings.Actions.UPLOADED_FILE_MVC, entityType: AuditLogStrings.Entities.FILE, details: new
+                {
+                    Filename = file,
+                    SizeBytes = fs.Length,
+                    UploadMethod = "mvc",
+                });
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"Failed to save a log for {user.UserName} (ID {user.Id}) uploading a file.", ex);
+        }
+        
 
         string url = Request.GetDisplayUrl().Split('?')[0];
         url = portRegex.Replace(url, "");
