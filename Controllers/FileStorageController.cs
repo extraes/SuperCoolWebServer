@@ -81,8 +81,7 @@ public partial class FileStorageController : Controller
         return Json(new {
             Items = resultList.Select(f => f.Name).ToArray(),
             Total = fileList.Length
-        })
-        ;
+        });
     }
 
     [HttpGet]
