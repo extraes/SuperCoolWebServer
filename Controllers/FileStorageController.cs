@@ -67,16 +67,16 @@ public partial class FileStorageController : Controller
         if (!Directory.Exists(BaseDirectory))
             return Json(Array.Empty<string>());
         
-        IEnumerable<FileInfo> fileList = new DirectoryInfo(BaseDirectory).GetFiles(file);
-        fileList = oldestFirst
+        FileInfo[] fileList = new DirectoryInfo(BaseDirectory).GetFiles(file);
+        fileList = (oldestFirst
             ? fileList.OrderBy(f => f.LastWriteTime)
-            : fileList.OrderByDescending(f => f.LastWriteTime);
+            : fileList.OrderByDescending(f => f.LastWriteTime)).ToArray();
 
-        var resultList = fileList = fileList.Skip(offset).Take(limit);
+        var resultList = fileList.Skip(offset).Take(limit);
         
         return Json(new {
             Items = resultList.Select(f => f.Name).ToArray(),
-            Total = fileList.Count()
+            Total = fileList.Length
         })
         ;
     }
