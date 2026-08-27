@@ -65,7 +65,11 @@ public partial class FileStorageController : Controller
         file = string.IsNullOrWhiteSpace(file) ? "*" : $"*{file.Trim('*')}*";
 
         if (!Directory.Exists(BaseDirectory))
-            return Json(Array.Empty<string>());
+            return Json(new
+            {
+                Items = Array.Empty<string>(),
+                Total = 0
+            });
         
         FileInfo[] fileList = new DirectoryInfo(BaseDirectory).GetFiles(file);
         fileList = (oldestFirst
