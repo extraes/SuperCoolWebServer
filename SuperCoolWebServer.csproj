@@ -10,20 +10,18 @@
     <PackageReference Include="CloudFlare.Client" Version="8.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Diagnostics.EntityFrameworkCore" Version="10.0.9" />
     <PackageReference Include="Microsoft.AspNetCore.Identity.EntityFrameworkCore" Version="10.0.10" />
-    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="7.0.5" />
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="10.0.9" />
-    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.10" />
-    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.5" />
-    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.11" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.11" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="10.0.11" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="10.0.2" />
+    <PackageReference Include="NuGet.Protocol" Version="7.9.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.4" />
     <PackageReference Include="Samboy063.Tomlet" Version="5.3.0" />
     <PackageReference Include="Smartstore.TinyImage.Gif.Native.linux-x64" Version="1.92.0" />
     <PackageReference Include="Smartstore.TinyImage.Gif.Native.win-x64" Version="1.92.0" />
     <PackageReference Include="Snowflakes" Version="2.0.0" />
     <PackageReference Include="StableCube.Media.Gifsicle" Version="1.0.0" />
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.9.0" />
-    <PackageReference Include="System.Formats.Asn1" Version="6.0.1" />
-    <PackageReference Include="System.Text.Json" Version="8.0.5" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="10.2.3" />
     <PackageReference Include="tusdotnet" Version="2.8.0" />
     <PackageReference Include="Xabe.FFmpeg" Version="5.2.6" />
     <PackageReference Include="YoutubeDLSharp" Version="1.1.2" />
@@ -33,6 +31,19 @@
     <None Update="frontend/**/*">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
+    
+  </ItemGroup>
+  
+  <ItemGroup>
+    <ProjectReference Include="SuperCoolAnalyzer/SuperCoolAnalyzer/SuperCoolAnalyzer.csproj"
+                      OutputItemType="Analyzer"
+                      ReferenceOutputAssembly="false" />
+
+    <Compile Remove="SuperCoolAnalyzer\**" />
+    <None Remove="SuperCoolAnalyzer\**" />
+    <EmbeddedResource Remove="SuperCoolAnalyzer\**" />
+    <Content Remove="SuperCoolAnalyzer\**" />
+    <_ContentIncludedByDefault Remove="SuperCoolAnalyzer\**" />
   </ItemGroup>
 
 </Project>

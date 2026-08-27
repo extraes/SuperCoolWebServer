@@ -19,8 +19,10 @@ public class AuthController : Controller
     [ActionName("login")]
     [Consumes("application/json")]
     public async Task<IActionResult> Login(
-        [FromBody] AuthModels.LoginRequest loginReq,
-        [FromServices] SignInManager<SuperCoolUser> signInManager)
+        [FromServices] SignInManager<SuperCoolUser> signInManager,
+        [FromServices] AuditLogWriter auditLog,
+        [FromServices] DataContext db,
+        [FromBody] AuthModels.LoginRequest loginReq)
     {
         var result = await signInManager.PasswordSignInAsync(
             loginReq.Username,
@@ -29,9 +31,28 @@ public class AuthController : Controller
             lockoutOnFailure: false);
         
         
-        return result.Succeeded
-            ? Ok()
-            : Unauthorized("Invalid username or password.");
+        var user = result.Succeeded
+            ? await signInManager.UserManager.FindByNameAsync(loginReq.Username)
+            : null;
+
+        try
+        {
+            await auditLog.WriteAsync(
+                HttpContext,
+                user?.Id,
+                result.Succeeded
+                    ? AuditLogStrings.Actions.AUTH_LOGIN_SUCCEEDED
+                    : AuditLogStrings.Actions.AUTH_LOGIN_FAILED, AuditLogStrings.Entities.USER,
+                user?.Id,
+                new { Username = loginReq.Username });
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"Failed to save sign-in log for {loginReq.Username} (ID {user?.Id})", ex);
+        }
+        
+
+        return result.Succeeded ? Ok() : Unauthorized("Invalid username or password.");
     }
     
     [HttpPost]
@@ -39,24 +60,44 @@ public class AuthController : Controller
     [Consumes("application/json")]
     [Authorize]
     public async Task<IActionResult> ChangePassword(
-        [FromBody] AuthModels.ChangePasswordRequest passReq,
-        [FromServices] UserManager<SuperCoolUser> userManager)
+        [FromServices] UserManager<SuperCoolUser> userManager,
+        [FromServices] AuditLogWriter auditLog,
+        [FromServices] DataContext db,
+        [FromBody] AuthModels.ChangePasswordRequest passReq)
     {
-        var caller = await userManager.GetUserAsync(HttpContext.User);
-        var result = await userManager.ChangePasswordAsync(caller!, passReq.CurrentPassword, passReq.NewPassword);
+        await using var txn = await db.Database.BeginTransactionAsync();
         
-        return result.Succeeded
-            ? Ok()
-            : BadRequest(result.Errors);
+        var caller = await userManager.GetUserAsync(HttpContext.User);
+        if (caller is null)
+            return Unauthorized();
+        
+        var result = await userManager.ChangePasswordAsync(caller, passReq.CurrentPassword, passReq.NewPassword);
+        
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
+
+        await auditLog.WriteAsync(
+            HttpContext, null,
+            AuditLogStrings.Actions.USER_PASSWORD_CHANGED,
+            AuditLogStrings.Entities.USER,
+            caller!.Id);
+        
+        await txn.CommitAsync();
+        return Ok();
     }
     
     [HttpPost]
     [ActionName("logout")]
     [Authorize]
     public async Task<IActionResult> Logout(
-        [FromServices] SignInManager<SuperCoolUser> signInManager)
+        [FromServices] SignInManager<SuperCoolUser> signInManager,
+        [FromServices] AuditLogWriter auditLog)
     {
+        var user = await signInManager.UserManager.GetUserAsync(HttpContext.User);
         await signInManager.SignOutAsync();
+        await auditLog.WriteAsync(
+            HttpContext,
+            user?.Id, AuditLogStrings.Actions.AUTH_LOGOUT, AuditLogStrings.Entities.USER, user?.Id);
         return Ok();
     }
 }

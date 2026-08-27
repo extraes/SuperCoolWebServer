@@ -7,13 +7,13 @@
 }
 
 <script type="module">
-    import { UserManagement } from "/Views/UserManagement.razor.js";
+    import { Links } from "/Views/Links.razor.js";
 
-    UserManagement.extraHeaders["@AfTokens.HeaderName"] = "@AfTokens.RequestToken";
-    window.UserManagement = UserManagement;
+    Links.extraHeaders["@AfTokens.HeaderName"] = "@AfTokens.RequestToken";
+    window.Links = Links;
 </script>
 <div class="pictochat-message">
-    <header class="ds-slate-50">User Management</header>
+    <header class="ds-slate-50">Links</header>
     <div style="display: grid;">
         <details style="justify-self: center;">
             <summary class="ds-green-50">Create user</summary>
@@ -36,13 +36,13 @@
                         
                         <button
                             class="create-user-permission-button ds-red" value="@((long)perm)"
-                            onclick="UserManagement.createUserTogglePermission(@((long)perm))">
+                            onclick="Links.createUserTogglePermission(@((long)perm))">
                             @perm.ToString()
                         </button>
                     }
                 </div>
 
-                <button id="create-user-button" onclick="UserManagement.createUser()">Create user</button>
+                <button id="create-user-button" onclick="Links.createUser()">Create user</button>
                 
                 <div class="alert" style="display:none;">
                     <span id="create-user-result"></span>
@@ -56,7 +56,7 @@
             <div class="ds-repeating">
                 
                 <!--suppress JSDeprecatedSymbols -->
-                <form onsubmit="event.preventDefault(); UserManagement.findUserByName()">
+                <form onsubmit="event.preventDefault(); Links.findUserByName()">
                     <label>
                         <span class="ds-div">Username</span>
                         <div class="input-wrapper">
@@ -71,7 +71,7 @@
 
 
                 <!--suppress JSDeprecatedSymbols -->
-                <form onsubmit="event.preventDefault(); UserManagement.findUserById()">
+                <form onsubmit="event.preventDefault(); Links.findUserById()">
                     <label>
                         <span class="ds-div">Number ID</span>
                         <div class="input-wrapper">
@@ -94,7 +94,7 @@
             <summary class="ds-green-50">Set user's password</summary>
             <div class="ds-repeating">
                 <!--suppress JSDeprecatedSymbols -->
-                <form onsubmit="event.preventDefault(); UserManagement.setUserPassword()">
+                <form onsubmit="event.preventDefault(); Links.findUserById()">
                     <label>
                         <span class="ds-div">User's ID</span>
                         <div class="input-wrapper">

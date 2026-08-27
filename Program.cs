@@ -10,7 +10,7 @@ using CloudFlare.Client.Enumerators;
 using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.OpenApi.Models;
+using Microsoft.EntityFrameworkCore;
 using Snowflakes;
 using SuperCoolWebServer.Auth;
 using SuperCoolWebServer.Data;
@@ -57,6 +57,7 @@ namespace SuperCoolWebServer
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen();
             builder.Services.AddDbContext<DataContext>();
+            builder.Services.AddScoped<AuditLogWriter>();
             builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
             builder.Services.AddAuthorization(options =>
@@ -132,6 +133,20 @@ namespace SuperCoolWebServer
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
             {
+                // I'm ACTIVELY DEVELOPING and Firefox decides to CACHE LOCALHOST.
+                // Fucking moronic.
+                app.Use(async (ctx, next) =>
+                {
+                    // MSDN says to not write to response directly from middleware.
+                    // SRC: https://learn.microsoft.com/en-us/aspnet/core/fundamentals/middleware/
+                    ctx.Response.OnStarting(() =>
+                    {
+                        ctx.Response.Headers.CacheControl = "max-age=0";
+                        return Task.CompletedTask;
+                    });
+                    await next.Invoke();
+                });
+                
                 // Give Swagger the ability to get an antiforgery token
                 app.MapGet("/_af/token", (HttpContext ctx, IAntiforgery antiforgery) =>
                 {
@@ -203,7 +218,7 @@ namespace SuperCoolWebServer
             {
                 var services = scope.ServiceProvider;
                 var context = services.GetRequiredService<DataContext>();
-                context.Database.EnsureCreated();
+                context.Database.Migrate();
                 
                 DataHelper.Initialize(services.GetRequiredService<UserManager<SuperCoolUser>>(),
                     services.GetRequiredService<SnowflakeGenerator<long>>())
@@ -272,9 +287,24 @@ namespace SuperCoolWebServer
                             //Providing New File name with extension
                             //string filestoreDir = @"C:\tusfiles\";
 
-                            await using var fileStream2 = new FileStream(Path.Combine(Config.values.filestoreDir, filename), FileMode.Create, FileAccess.Write);
+                            var destination = Path.Combine(Config.values.filestoreDir, filename);
+                            var existed = File.Exists(destination);
+                            await using var fileStream2 = new FileStream(destination, FileMode.Create, FileAccess.Write);
                             await fileStream.CopyToAsync(fileStream2);
-                            
+
+                            var auditLog = httpCtx.RequestServices.GetRequiredService<AuditLogWriter>();
+                            await auditLog.WriteAsync(
+                                httpCtx, null,
+                                existed
+                                    ? AuditLogStrings.Actions.FILE_OVERWRITTEN
+                                    : AuditLogStrings.Actions.UPLOADED_FILE_TUS,
+                                AuditLogStrings.Entities.FILE,
+                                details: new
+                                {
+                                    Filename = filename,
+                                    SizeBytes = fileStream2.Length,
+                                    UploadMethod = "tus",
+                                });
                         }
                     }
                 };

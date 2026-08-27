@@ -10,6 +10,7 @@ namespace SuperCoolWebServer.Data;
 
 public class DataContext(DbContextOptions<DataContext> options) : IdentityDbContext<SuperCoolUser, IdentityRole<long>, long>(options)
 {
+    public DbSet<AuditLogEntry> AuditLogEntries => Set<AuditLogEntry>();
     
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {

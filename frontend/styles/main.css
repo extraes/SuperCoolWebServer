@@ -18,6 +18,10 @@ body {
     text-shadow: 2px 2px 1px black;
 }
 
+form > * {
+    margin: var(--text-padding);
+}
+
 /*Pictochat stylings*/
 .pictochat-window {
     max-width: 90%;
@@ -96,6 +100,7 @@ details > summary {
 
 .bar-lg {
     width: 100vw;
+    display: grid;
     justify-items: center;
     align-content: center;
 }
@@ -133,7 +138,7 @@ details > summary {
 }
 
 .uppy-Dashboard-inner {
-    width: stretch !important;
+    width: unset !important;
     height: 100% !important;
 }
 
@@ -146,6 +151,7 @@ details > summary {
 .uppy-DashboardContent-back, .uppy-DashboardContent-title {
     font-weight: bolder !important;
 }
+
 /*ive given up on trying to transform the button into a DS button. it looks fine enough as-is :shrump: */
 /*.uppy-StatusBar-actions > button {*/
 /*    background-color*/

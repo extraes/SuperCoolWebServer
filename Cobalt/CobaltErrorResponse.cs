@@ -37,5 +37,5 @@ public class CobaltErrorResponse : CobaltResponse
     /// contains more context about the error
     /// </summary>
     [JsonPropertyName("error")]
-    public CobaltError Error { get; set; }
+    public CobaltError Error { get; set; } = new();
 }

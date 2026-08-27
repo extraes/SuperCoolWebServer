@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Html;
+﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.WebUtilities;
@@ -7,8 +9,10 @@ using System.Security.Claims;
 using System.Text.RegularExpressions;
 using System.Web;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.RateLimiting;
 using SuperCoolWebServer.Auth;
+using SuperCoolWebServer.Data;
 using SuperCoolWebServer.Models;
 using Xabe.FFmpeg;
 
@@ -37,17 +41,47 @@ public partial class FileStorageController : Controller
         
         return Content(finf.Length.ToString());
     }
-    
+
     [HttpGet]
     [ActionName("list")]
     [Authorize(Policy = nameof(Permissions.ListFiles))]
-    public IActionResult ListAll(string file)
+    [AutoValidateAntiforgeryToken]
+    public IActionResult ListFiles(
+        [Description("Used as a wildcard-supporting search string. Use an asterisk to get all files (or an empty string, as it's replaced w/ an asterisk).\n" +
+                     "If your query isn't surrounded in asterisks, it will be, so that your search returns files with your string inside it.")]
+        string file,
+        bool oldestFirst = false,
+        int offset = 0,
+        int limit = 100)
     {
-        string[] files = Directory.Exists(BaseDirectory)
-            ? Directory.GetFiles(BaseDirectory)
-            : [];
+        if (limit > 100 || limit < 1)
+            return BadRequest("Limit must be between 1 and 100");
+        
+        const string WILDCARD_CHARS = "?*"; // this is all GetFiles supports lol
+        if (Path.GetInvalidFileNameChars().Except(WILDCARD_CHARS).Any(file.Contains)
+            || file.Contains('\\') || file.Contains('/'))
+            return BadRequest("Must be a valid string");
+        
+        file = string.IsNullOrWhiteSpace(file) ? "*" : $"*{file.Trim('*')}*";
 
-        return Json(files);
+        if (!Directory.Exists(BaseDirectory))
+            return Json(new
+            {
+                Items = Array.Empty<string>(),
+                Total = 0
+            });
+        
+        FileInfo[] fileList = new DirectoryInfo(BaseDirectory).GetFiles(file);
+        fileList = (oldestFirst
+            ? fileList.OrderBy(f => f.LastWriteTime)
+            : fileList.OrderByDescending(f => f.LastWriteTime)).ToArray();
+
+        var resultList = fileList.Skip(offset).Take(limit);
+        
+        return Json(new {
+            Items = resultList.Select(f => f.Name).ToArray(),
+            Total = fileList.Length
+        });
     }
 
     [HttpGet]
@@ -61,14 +95,14 @@ public partial class FileStorageController : Controller
     }
 
     // literally just gets a page and displays it as HTML.
-    // stupid simple and probably a bad idea. but #weball, and as of when this is implemented, uploading files requires
+    // stupid simple and probably a bad idea. but #WeBall, and as of when this is implemented, uploading files requires
     // an account with the permission to do so, so this shouldn't be abused (fingers crossed)
     [HttpGet]
     [ActionName("site")]
     public async Task<IActionResult> Site(string file)
     {
         if (string.IsNullOrEmpty(file)
-            || file.Any(c => c == '/' || c == '\\')
+            || file.Any(c => c is '/' or '\\')
             || Path.GetExtension(file) != ".html")
             return BadRequest();
 
@@ -186,18 +220,29 @@ public partial class FileStorageController : Controller
     [Consumes("application/octet-stream", IsOptional = true)]
     [RequestSizeLimit(1024 * MB_SIZE)]
     [Authorize(Policy = nameof(Permissions.UploadFiles))]
-    public async Task<IActionResult> Upload([FromBody] Stream fileStream, string file, string auth, bool overwrite = false)
+    public async Task<IActionResult> Upload(
+        [FromServices] UserManager<SuperCoolUser> userManager,
+        [FromServices] AuditLogWriter auditLog,
+        [FromBody] Stream fileStream,
+        string file,
+        string auth,
+        bool overwrite = false)
     {
         if (!Request.Headers.TryGetValue("cf-connecting-ip", out var ip))
             ip = Request.HttpContext.Connection.RemoteIpAddress?.ToString();
 
         if (string.IsNullOrEmpty(file) || file.Any(c => c == '/' || c == '\\'))
             return BadRequest();
+        
+        var user = await userManager.GetUserAsync(HttpContext.User);
+        if (user is null)
+            return Unauthorized();
 
         EnsureDirectory();
 
         string path = Path.Combine(BaseDirectory, file);
-        if (System.IO.File.Exists(path) && !overwrite)
+        var existed = System.IO.File.Exists(path);
+        if (existed && !overwrite)
             return StatusCode(409);
 
         Logger.Put($"IP {ip} is uploading file {file}", LogType.Debug);
@@ -207,6 +252,26 @@ public partial class FileStorageController : Controller
         await fileStream.CopyToAsync(fs);
 
         Logger.Put($"IP {ip} uploaded {file} that is {fs.Length / 1024} KB long", LogType.Debug);
+        try
+        {
+
+            await auditLog.WriteAsync(
+                HttpContext,
+                actorUserId: user.Id,
+                action: existed
+                    ? AuditLogStrings.Actions.FILE_OVERWRITTEN
+                    : AuditLogStrings.Actions.UPLOADED_FILE_MVC, entityType: AuditLogStrings.Entities.FILE, details: new
+                {
+                    Filename = file,
+                    SizeBytes = fs.Length,
+                    UploadMethod = "mvc",
+                });
+        }
+        catch (Exception ex)
+        {
+            Logger.Error($"Failed to save a log for {user.UserName} (ID {user.Id}) uploading a file.", ex);
+        }
+        
 
         string url = Request.GetDisplayUrl().Split('?')[0];
         url = portRegex.Replace(url, "");

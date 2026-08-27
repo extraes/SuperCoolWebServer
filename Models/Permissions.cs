@@ -8,7 +8,7 @@ public enum Permissions : long
     UploadFiles = 1 << 0,
     ListFiles = 1 << 1,
     // Used by redirector
-    CreateLinks = 1 << 2,
+    ManageLinks = 1 << 2,
     // Used by WOL controller
     UseWakeOnLan = 1 << 3,
     // Lets this user create or change the permissions of other users.

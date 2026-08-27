@@ -1,20 +1,14 @@
-using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Identity;
 using Snowflakes;
 
 namespace SuperCoolWebServer.Models;
 
-// The cloudflare client lib already uses the name "User"
-// also the name is funny.
-public class SuperCoolUser : IdentityUser<long>, ISnowflake
+public abstract class SnowflakeObject : ISnowflake
 {
-    public required long CreatedBy { get; init; }
-    public Permissions Permissions { get; set; }
+    public static readonly DateTime Epoch = new DateTime(2026, 1, 1,  0, 0, 0, DateTimeKind.Utc);
     
-    
-    
+    public required long Id { get; init; }
     public DateTimeOffset CreatedAt =>
-        SnowflakeObject.Epoch.AddMilliseconds(Id >> 9);
+        Epoch.AddMilliseconds(Id >> 9);
     
     public bool Equals(SnowflakeObject? other)
     {
@@ -26,7 +20,7 @@ public class SuperCoolUser : IdentityUser<long>, ISnowflake
     {
         if (other is null)
             return 1;
-
+        
         if (Id < other.Id)
             return -1;
         return this.Id > other.Id ? 1 : 0;

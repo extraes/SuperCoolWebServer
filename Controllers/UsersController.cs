@@ -21,7 +21,8 @@ public class UsersController : Controller
     public async Task<IActionResult> Create(
         [FromBody(EmptyBodyBehavior = EmptyBodyBehavior.Disallow)] AuthModels.UserCreationRequest creationReq,
         [FromServices] SnowflakeGenerator<long> snowflakeGenerator,
-        [FromServices] UserManager<SuperCoolUser> userManager)
+        [FromServices] UserManager<SuperCoolUser> userManager,
+        [FromServices] AuditLogWriter auditLog)
     {
         var validPermissions = PermissionsValidator.MakeValid(creationReq.Permissions);
         var caller = await userManager.GetUserAsync(HttpContext.User);
@@ -38,6 +39,7 @@ public class UsersController : Controller
         
         var newUser = new SuperCoolUser()
         {
+            CreatedBy = caller.Id,
             UserName = creationReq.Username,
             Id = snowflakeGenerator.NewSnowflake(),
             Permissions = validPermissions
@@ -45,12 +47,22 @@ public class UsersController : Controller
         var passwordStr = DataHelper.CreateRandomPassword();
         var result = await userManager.CreateAsync(newUser, passwordStr);
         if (result.Succeeded)
+        {
+            await auditLog.WriteAsync(
+                HttpContext,
+                caller.Id,
+                AuditLogStrings.Actions.USER_CREATED, AuditLogStrings.Entities.USER, newUser.Id, new
+                {
+                    Username = newUser.UserName,
+                    Permissions = (long)newUser.Permissions,
+                });
             return Ok(new
             {
-                user = newUser,
+                user = new TransportUser(newUser),
                 password = passwordStr,
                 message = "Please change your password when you log in :)"
-            }); 
+            });
+        }
         
         return StatusCode(500, result.Errors);
     }
@@ -60,7 +72,8 @@ public class UsersController : Controller
     [Authorize(Policy = nameof(Permissions.ManageUsers))]
     public async Task<IActionResult> Remove(
         long id,
-        [FromServices] UserManager<SuperCoolUser> userManager)
+        [FromServices] UserManager<SuperCoolUser> userManager,
+        [FromServices] AuditLogWriter auditLog)
     {
         var targetUser = await userManager.FindByIdAsync(id.ToString());
         if (targetUser is null)
@@ -70,7 +83,15 @@ public class UsersController : Controller
         
         var result = await userManager.DeleteAsync(targetUser);
         if (result.Succeeded)
-            return Ok(); 
+        {
+            await auditLog.WriteAsync(
+                HttpContext, null,
+                AuditLogStrings.Actions.USER_DELETED,
+                AuditLogStrings.Entities.USER,
+                targetUser.Id,
+                details: new { Username = targetUser.UserName });
+            return Ok();
+        }
         
         return StatusCode(500, result.Errors);
     }
@@ -81,19 +102,28 @@ public class UsersController : Controller
     [Authorize(policy: nameof(Permissions.ManageUsers))]
     public async Task<IActionResult> ChangeUserPassword(
         [FromBody] AuthModels.SetUserPasswordRequest setReq,
-        [FromServices] UserManager<SuperCoolUser> userManager)
+        [FromServices] UserManager<SuperCoolUser> userManager,
+        [FromServices] AuditLogWriter auditLog)
     {
         var target = await userManager.FindByIdAsync(setReq.TargetId.ToString());
         if (target is null)
         {
             return NotFound($"User with id {setReq.TargetId} does not exist.");
         }
-        var passwordChangeToken =  await userManager.GeneratePasswordResetTokenAsync(target);
-        var result = await userManager.ChangePasswordAsync(target!, passwordChangeToken, setReq.NewPassword);
         
-        return result.Succeeded
-            ? Ok()
-            : BadRequest(result.Errors);
+        var passwordChangeToken =  await userManager.GeneratePasswordResetTokenAsync(target);
+        var result = await userManager.ResetPasswordAsync(target, passwordChangeToken, setReq.NewPassword);
+        
+        if (!result.Succeeded)
+            return BadRequest(result.Errors);
+
+        await auditLog.WriteAsync(
+            HttpContext, null,
+            AuditLogStrings.Actions.USER_PASSWORD_RESET_BY_ADMIN,
+            AuditLogStrings.Entities.USER,
+            target.Id,
+            details: new { Username = target.UserName });
+        return Ok();
     }
     
     [HttpGet]
@@ -109,7 +139,7 @@ public class UsersController : Controller
             return NotFound();
         }
         
-        return Ok(existingUser);
+        return Ok(new TransportUser(existingUser));
     }
     
     [HttpGet]
@@ -125,6 +155,6 @@ public class UsersController : Controller
             return NotFound();
         }
         
-        return Ok(existingUser);
+        return Ok(new TransportUser(existingUser));
     }
 }

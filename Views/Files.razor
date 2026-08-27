@@ -1,0 +1,49 @@
+@using Microsoft.AspNetCore.Antiforgery
+@using SuperCoolWebServer.Models
+
+@code {
+    [Parameter] public required SuperCoolUser User { get; init; }
+    [Parameter] public required AntiforgeryTokenSet AfTokens { get; init; }
+}
+
+<script type="module">
+    import { Files } from "/Views/Files.razor.js";
+
+    Files.extraHeaders["@AfTokens.HeaderName"] = "@AfTokens.RequestToken";
+    window.Files = Files;
+</script>
+<div class="pictochat-message">
+    <header class="ds-slate-50">Files</header>
+    <div style="display: grid;">
+        <details style="justify-self: center;">
+            <summary class="ds-green-50">Get files</summary>
+            <div class="ds-repeating">
+                <!--suppress JSDeprecatedSymbols -->
+                <form onsubmit="event.preventDefault(); Files.getFiles()">
+                    <label>
+                        <span class="ds-div">Filter (supports wildcards)</span>
+                        <div class="input-wrapper">
+                            <div class="input-before"></div>
+                            <input id="file-list-filter" type="text"/>
+                            <div class="input-after"></div>
+                        </div>
+                    </label>
+
+                    <!--suppress JSDeprecatedSymbols -->
+                    <button id="file-list-reverse" class="ds-red" onclick="event.preventDefault(); Files.toggleReverse();">Oldest files first</button>
+
+                    <button id="file-list-search" type="submit">Search</button>
+                </form>
+
+                <div class="alert" id="file-list-err" style="display: none;">
+                    <span>err</span>
+                </div>
+                
+                <div id="file-list-results" style="display: none;" >
+                </div>
+
+            </div>
+        </details>
+    </div>
+</div>
+

@@ -5,6 +5,10 @@ VisualStudioVersion = 17.6.33723.286
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SuperCoolWebServer", "SuperCoolWebServer.csproj", "{387A5E5F-5C3B-4091-B9B1-3E1DB7048EED}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperCoolAnalyzer", "SuperCoolAnalyzer\SuperCoolAnalyzer\SuperCoolAnalyzer.csproj", "{F5EA7348-F988-46BF-AFCB-3DCEEA485A12}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SuperCoolAnalyzer.Tests", "SuperCoolAnalyzer\SuperCoolAnalyzer.Tests\SuperCoolAnalyzer.Tests.csproj", "{C6157663-6833-431C-B826-986D7FC9A539}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{387A5E5F-5C3B-4091-B9B1-3E1DB7048EED}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{387A5E5F-5C3B-4091-B9B1-3E1DB7048EED}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{387A5E5F-5C3B-4091-B9B1-3E1DB7048EED}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F5EA7348-F988-46BF-AFCB-3DCEEA485A12}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F5EA7348-F988-46BF-AFCB-3DCEEA485A12}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F5EA7348-F988-46BF-AFCB-3DCEEA485A12}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F5EA7348-F988-46BF-AFCB-3DCEEA485A12}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C6157663-6833-431C-B826-986D7FC9A539}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C6157663-6833-431C-B826-986D7FC9A539}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C6157663-6833-431C-B826-986D7FC9A539}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C6157663-6833-431C-B826-986D7FC9A539}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
