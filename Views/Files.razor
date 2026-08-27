@@ -7,10 +7,10 @@
 }
 
 <script type="module">
-    import { UserManagement } from "/Views/UserManagement.razor.js";
+    import { Files } from "/Views/Files.razor.js";
 
-    UserManagement.extraHeaders["@AfTokens.HeaderName"] = "@AfTokens.RequestToken";
-    window.UserManagement = UserManagement;
+    Files.extraHeaders["@AfTokens.HeaderName"] = "@AfTokens.RequestToken";
+    window.Files = Files;
 </script>
 <div class="pictochat-message">
     <header class="ds-slate-50">Files</header>
@@ -24,95 +24,26 @@
                         <span class="ds-div">Filter (supports wildcards)</span>
                         <div class="input-wrapper">
                             <div class="input-before"></div>
-                            <input id="create-user-username" type="text"/>
+                            <input id="file-list-filter" type="text"/>
                             <div class="input-after"></div>
                         </div>
                     </label>
-                    
-                    <button id="file-list-reverse" class="ds-green" onclick="Files.toggleReverse()">Most recent first</button>
+
+                    <!--suppress JSDeprecatedSymbols -->
+                    <button id="file-list-reverse" class="ds-red" onclick="event.preventDefault(); Files.toggleReverse();">Oldest files first</button>
 
                     <button id="file-list-search" type="submit">Search</button>
                 </form>
 
-                <div class="alert" style="display:none;">
-                    <span id="create-user-result"></span>
+                <div class="alert" id="file-list-err" style="display: none;">
+                    <span>err</span>
                 </div>
-
-            </div>
-        </details>
-        
-        <details style="justify-self: center;">
-            <summary class="ds-green-50">Find user</summary>
-            <div class="ds-repeating">
                 
-                <!--suppress JSDeprecatedSymbols -->
-                <form onsubmit="event.preventDefault(); UserManagement.findUserByName()">
-                    <label>
-                        <span class="ds-div">Username</span>
-                        <div class="input-wrapper">
-                            <div class="input-before"></div>
-                            <input id="find-user-username" type="text" />
-                            <div class="input-after"></div>
-
-                            <button id="find-user-name-btn" type="submit" class="button-square" >></button>
-                        </div>
-                    </label>
-                </form>
-
-
-                <!--suppress JSDeprecatedSymbols -->
-                <form onsubmit="event.preventDefault(); UserManagement.findUserById()">
-                    <label>
-                        <span class="ds-div">Number ID</span>
-                        <div class="input-wrapper">
-                            <div class="input-before"></div>
-                            <input id="find-user-id" type="text"/>
-                            <div class="input-after"></div>
-
-                            <button id="find-user-id-btn" type="submit" class="button-square">></button>
-                        </div>
-                    </label>
-                </form>
-
-                <div class="alert" style="display:none;">
-                    <span id="find-user-result"></span>
+                <div id="file-list-results" style="display: none;" >
                 </div>
+
             </div>
         </details>
-        
-        <details style="justify-self: center;">
-            <summary class="ds-green-50">Set user's password</summary>
-            <div class="ds-repeating">
-                <!--suppress JSDeprecatedSymbols -->
-                <form onsubmit="event.preventDefault(); UserManagement.findUserById()">
-                    <label>
-                        <span class="ds-div">User's ID</span>
-                        <div class="input-wrapper">
-                            <div class="input-before"></div>
-                            <input id="set-pwd-id" type="text"/>
-                            <div class="input-after"></div>
-                        </div>
-                    </label>
-
-                    <label>
-                        <span class="ds-div">New password</span>
-                        <div class="input-wrapper">
-                            <div class="input-before"></div>
-                            <input id="set-pwd-password" type="text"/>
-                            <div class="input-after"></div>
-                        </div>
-                    </label>
-
-                    <button id="set-pwd-btn" type="submit">Set password</button>
-                </form>
-
-                <div class="alert" style="display:none;">
-                    <span id="set-pwd-result"></span>
-                </div>
-            </div>
-        </details>
-
-
     </div>
 </div>
 

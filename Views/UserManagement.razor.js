@@ -66,7 +66,7 @@ export class UserManagement {
         let reqHeaders = { "Content-Type": "application/json", };
         reqHeaders = Object.assign(reqHeaders, this.extraHeaders);
 
-        let result = await fetch(`users/create`, {
+        let result = await fetch(`/users/create`, {
             method: "POST",
             body: JSON.stringify({
                 Username: input.val(),
@@ -102,7 +102,7 @@ export class UserManagement {
         reqHeaders = Object.assign(reqHeaders, this.extraHeaders);
 
         
-        let result = await fetch(`users/findByName?username=${encodeURIComponent(input.val())}`, {
+        let result = await fetch(`/users/findByName?username=${encodeURIComponent(input.val())}`, {
             method: "GET",
             headers: reqHeaders
         });
@@ -137,7 +137,7 @@ export class UserManagement {
         let reqHeaders = { };
         reqHeaders = Object.assign(reqHeaders, this.extraHeaders);
 
-        let result = await fetch(`users/findById?id=${input.val()}`, {
+        let result = await fetch(`/users/findById?id=${input.val()}`, {
             method: "GET",
             headers: reqHeaders
         });
@@ -173,7 +173,7 @@ export class UserManagement {
         let reqHeaders = { "Content-Type": "application/json", };
         reqHeaders = Object.assign(reqHeaders, this.extraHeaders);
         
-        let result = await fetch(`users/changeUserPassword`, {
+        let result = await fetch(`/users/changeUserPassword`, {
             method: "POST",
             body: JSON.stringify({
                 TargetId: idInput.val(),

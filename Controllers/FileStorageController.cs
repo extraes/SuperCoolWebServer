@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
@@ -44,25 +45,32 @@ public partial class FileStorageController : Controller
     [HttpGet]
     [ActionName("list")]
     [Authorize(Policy = nameof(Permissions.ListFiles))]
-    public IActionResult ListAll(
-        [Description("Used as a wildcard-supporting search string here. Use an asterisk to get all files.")]
+    [AutoValidateAntiforgeryToken]
+    public IActionResult ListFiles(
+        [Description("Used as a wildcard-supporting search string. Use an asterisk to get all files (or an empty string, as it's replaced w/ an asterisk).\n" +
+                     "If your query isn't surrounded in asterisks, it will be, so that your search returns files with your string inside it.")]
         string file,
-        bool oldestFirst)
+        bool oldestFirst = false,
+        int offset = 0,
+        [Range(1, 100)] int limit = 100)
     {
         if (Path.GetInvalidFileNameChars().Any(file.Contains)
             || file.Contains('\\') || file.Contains('/'))
             return BadRequest("Must be a valid string");
+        
+        file = string.IsNullOrWhiteSpace(file) ? "*" : $"*{file.Trim('*')}*";
 
         if (!Directory.Exists(BaseDirectory))
             return Json(Array.Empty<string>());
         
-        var fileList = new DirectoryInfo(BaseDirectory).GetFiles(file);
-        if (oldestFirst)
-            fileList = fileList.OrderBy(f => f.LastWriteTime).ToArray();
-        else
-            fileList = fileList.OrderByDescending(f => f.LastWriteTime).ToArray();
+        IEnumerable<FileInfo> fileList = new DirectoryInfo(BaseDirectory).GetFiles(file);
+        fileList = oldestFirst
+            ? fileList.OrderBy(f => f.LastWriteTime)
+            : fileList.OrderByDescending(f => f.LastWriteTime);
+
+        fileList = fileList.Skip(offset).Take(limit);
         
-        return Json(fileList);
+        return Json(fileList.Select(f => f.Name).ToArray());
     }
 
     [HttpGet]
@@ -76,14 +84,14 @@ public partial class FileStorageController : Controller
     }
 
     // literally just gets a page and displays it as HTML.
-    // stupid simple and probably a bad idea. but #weball, and as of when this is implemented, uploading files requires
+    // stupid simple and probably a bad idea. but #WeBall, and as of when this is implemented, uploading files requires
     // an account with the permission to do so, so this shouldn't be abused (fingers crossed)
     [HttpGet]
     [ActionName("site")]
     public async Task<IActionResult> Site(string file)
     {
         if (string.IsNullOrEmpty(file)
-            || file.Any(c => c == '/' || c == '\\')
+            || file.Any(c => c is '/' or '\\')
             || Path.GetExtension(file) != ".html")
             return BadRequest();
 
