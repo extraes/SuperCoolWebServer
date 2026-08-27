@@ -70,7 +70,7 @@
     
     @if (user.Permissions.HasFlag(Permissions.ListFiles))
     {
-        Write(await Html.RenderComponentAsync<FileList>(RenderMode.Static, new
+        Write(await Html.RenderComponentAsync<Files>(RenderMode.Static, new
         {
             User = user,
             AfTokens = tokens

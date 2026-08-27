@@ -15,6 +15,7 @@ export class UserManagement {
         
         return false;
     }
+    
     static blinkDsButton(buttonElement) {
         // Blink the button in the stuuupidest way possible
         for (let i = 0; i < 10; i++) {
