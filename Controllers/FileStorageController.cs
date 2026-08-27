@@ -52,8 +52,11 @@ public partial class FileStorageController : Controller
         string file,
         bool oldestFirst = false,
         int offset = 0,
-        [Range(1, 100)] int limit = 100)
+        int limit = 100)
     {
+        if (limit > 100 || limit < 1)
+            return BadRequest("Limit must be between 1 and 100");
+        
         const string WILDCARD_CHARS = "?*"; // this is all GetFiles supports lol
         if (Path.GetInvalidFileNameChars().Except(WILDCARD_CHARS).Any(file.Contains)
             || file.Contains('\\') || file.Contains('/'))
