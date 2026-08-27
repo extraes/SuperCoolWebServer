@@ -54,7 +54,8 @@ public partial class FileStorageController : Controller
         int offset = 0,
         [Range(1, 100)] int limit = 100)
     {
-        if (Path.GetInvalidFileNameChars().Any(file.Contains)
+        const string WILDCARD_CHARS = "?*"; // this is all GetFiles supports lol
+        if (Path.GetInvalidFileNameChars().Except(WILDCARD_CHARS).Any(file.Contains)
             || file.Contains('\\') || file.Contains('/'))
             return BadRequest("Must be a valid string");
         
@@ -68,9 +69,13 @@ public partial class FileStorageController : Controller
             ? fileList.OrderBy(f => f.LastWriteTime)
             : fileList.OrderByDescending(f => f.LastWriteTime);
 
-        fileList = fileList.Skip(offset).Take(limit);
+        var resultList = fileList = fileList.Skip(offset).Take(limit);
         
-        return Json(fileList.Select(f => f.Name).ToArray());
+        return Json(new {
+            Items = resultList.Select(f => f.Name).ToArray(),
+            Total = fileList.Count()
+        })
+        ;
     }
 
     [HttpGet]

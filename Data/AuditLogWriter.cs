@@ -18,23 +18,30 @@ public sealed class AuditLogWriter(
         CancellationToken cancellationToken = default)
     {
         actorUserId ??= GetUserId(httpContext.User);
-
-        string json = JsonSerializer.Serialize(new
+        
+        string jsonStr = JsonSerializer.Serialize(new
         {
             RequestId = httpContext.TraceIdentifier,
             Data = details,
         });
-
-        if (json.Length > AuditLogEntry.DETAILS_MAX_LENGTH)
+        
+        if (jsonStr.Length > AuditLogEntry.DETAILS_MAX_LENGTH)
         {
-            json =JsonSerializer.Serialize(new
+            var originalJson = jsonStr;
+            int shortenBy = 128;
+            while (jsonStr.Length > AuditLogEntry.DETAILS_MAX_LENGTH)
             {
-                RequestId = httpContext.TraceIdentifier,
-                Data = new
+                jsonStr = JsonSerializer.Serialize(new
                 {
-                    TruncatedData = json[..(AuditLogEntry.DETAILS_MAX_LENGTH - 1024)],
-                }
-            }); 
+                    RequestId = httpContext.TraceIdentifier,
+                    Data = new
+                    {
+                        TruncatedData = originalJson[..(AuditLogEntry.DETAILS_MAX_LENGTH - shortenBy)],
+                    }
+                }); 
+                
+                shortenBy += 128;
+            }
         }
         
         var entry = new AuditLogEntry
@@ -44,7 +51,7 @@ public sealed class AuditLogWriter(
             Action = action,
             EntityType = entityType,
             EntityId = entityId,
-            DetailsJson = json,
+            DetailsJson = jsonStr,
         };
 
         await db.AuditLogEntries.AddAsync(entry, cancellationToken);

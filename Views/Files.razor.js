@@ -1,3 +1,6 @@
+import { withErrorHandling } from "/frontend/js/Utils.js";
+
+
 export class Files {
     static oldestFirst = false;
     static extraHeaders = {};
@@ -17,7 +20,11 @@ export class Files {
         }
     }
     
-    static async getFiles() {
+    static getFiles() {
+        return withErrorHandling(() => this.getFilesImpl(), $("#file-list-err"));
+    }
+    
+    static async getFilesImpl() {
         let errElement = $("#file-list-err");
         let resultElement = $("#file-list-results");
         let filter = $("#file-list-filter");
@@ -33,17 +40,23 @@ export class Files {
             method: "GET",
             headers: reqHeaders
         });
-        
+
         if (result.ok)
         {
             let json = await result.json();
+            let items = json["Items"];
+            let total = json["Total"];
 
-            // resultElement.add("div").addClass("pictochat-status").text(`${json.length} file(s)`);
+            let statusText = `${total} file(s)`;
+            if (items.length < total) {
+                statusText += " (Narrow your search to see other files)"
+            }
+            
             $("<div>")
                 .addClass("pictochat-status")
-                .text(`${json.length} file(s)`)
+                .text(statusText)
                 .appendTo(resultElement);
-            for (let fileName of json) {
+            for (let fileName of items) {
                 $("<div>")
                     .addClass("pictochat-message")
                     .text(fileName)
@@ -59,7 +72,6 @@ export class Files {
             errElement.show();
         }
     }
-  
 }
 
 window.Files = Files;
