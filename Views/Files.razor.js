@@ -44,8 +44,8 @@ export class Files {
         if (result.ok)
         {
             let json = await result.json();
-            let items = json["Items"];
-            let total = json["Total"];
+            let items = json["items"];
+            let total = json["total"];
 
             let statusText = `${total} file(s)`;
             if (items.length < total) {
