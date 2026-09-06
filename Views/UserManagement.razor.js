@@ -1,4 +1,4 @@
-import { withErrorHandling } from "/frontend/js/Utils.js";
+import { withErrorHandling, blinkDsButton, removeDsColors } from "../frontend/js/Utils.js";
 
 export class UserManagement {
     static extraHeaders = {};
@@ -16,16 +16,6 @@ export class UserManagement {
         catch { }
         
         return false;
-    }
-    
-    static blinkDsButton(buttonElement) {
-        // Blink the button in the stuuupidest way possible
-        for (let i = 0; i < 10; i++) {
-            if (i % 2 === 0)
-                setTimeout(() => { buttonElement.addClass("ds-red") }, i * 250);
-            else
-                setTimeout(() => { buttonElement.removeClass("ds-red") }, i * 250);
-        }
     }
     
     static createUserTogglePermission(value) {
@@ -61,7 +51,7 @@ export class UserManagement {
     }
     
     static createUser() {
-        return withErrorHandling(() => this.createUserImpl(), $("#create-user-result"));
+        return withErrorHandling(() => this.createUserImpl(), $("#create-user-result"), $("#create-user-button"));
     }
     
     static async createUserImpl() {
@@ -72,6 +62,7 @@ export class UserManagement {
         let reqHeaders = { "Content-Type": "application/json", };
         reqHeaders = Object.assign(reqHeaders, this.extraHeaders);
 
+        removeDsColors(button);
         let result = await fetch(`/users/create`, {
             method: "POST",
             body: JSON.stringify({
@@ -92,7 +83,7 @@ export class UserManagement {
         }
         else
         {
-            this.blinkDsButton(button);
+            blinkDsButton(button);
 
             output.parent().show();
             output.text(`Failed! Status code ${result.status}\n${await result.text()}`);
@@ -100,7 +91,7 @@ export class UserManagement {
     }
     
     static findUserByName() {
-        return withErrorHandling(() => this.findUserByNameImpl(), $("#find-user-result"));
+        return withErrorHandling(() => this.findUserByNameImpl(), $("#find-user-result"), $("#find-user-name-btn"));
     }
     
     static async findUserByNameImpl() {
@@ -111,7 +102,7 @@ export class UserManagement {
         let reqHeaders = { };
         reqHeaders = Object.assign(reqHeaders, this.extraHeaders);
 
-        
+        removeDsColors(button);
         let result = await fetch(`/users/findByName?username=${encodeURIComponent(input.val())}`, {
             method: "GET",
             headers: reqHeaders
@@ -125,8 +116,7 @@ export class UserManagement {
             output.text(`Found! Username '${resJson.userName}', ID ${resJson.id}`);
         }
         else {
-            button.removeClass("ds-green");
-            this.blinkDsButton(button);
+            blinkDsButton(button);
 
             output.parent().show();
             output.text(`Failed! Status code ${result.status}\n${await result.text()}`);
@@ -134,7 +124,7 @@ export class UserManagement {
     }
     
     static findUserById() {
-        return withErrorHandling(() => this.findUserByIdImpl(), $("#find-user-result"));
+        return withErrorHandling(() => this.findUserByIdImpl(), $("#find-user-result"), $("find-user-id-btn"));
     }
     
     static async findUserByIdImpl() {
@@ -151,6 +141,7 @@ export class UserManagement {
         let reqHeaders = { };
         reqHeaders = Object.assign(reqHeaders, this.extraHeaders);
 
+        removeDsColors(button);
         let result = await fetch(`/users/findById?id=${input.val()}`, {
             method: "GET",
             headers: reqHeaders
@@ -164,8 +155,7 @@ export class UserManagement {
             output.text(`Found! Username '${resJson.userName}', ID ${resJson.id}`);
         }
         else {
-            button.removeClass("ds-green");
-            this.blinkDsButton(button);
+            blinkDsButton(button);
 
             output.parent().show();
             output.text(`Failed! Status code ${result.status}\n${await result.text()}`);
@@ -191,7 +181,8 @@ export class UserManagement {
         
         let reqHeaders = { "Content-Type": "application/json", };
         reqHeaders = Object.assign(reqHeaders, this.extraHeaders);
-        
+
+        removeDsColors(button);
         let result = await fetch(`/users/changeUserPassword`, {
             method: "POST",
             body: JSON.stringify({
@@ -211,8 +202,7 @@ export class UserManagement {
         }
         else
         {
-            button.removeClass("ds-green");
-            this.blinkDsButton(button);
+            blinkDsButton(button);
 
             output.parent().show();
             output.text(`Failed! Status code ${result.status}\n${await result.text()}`);

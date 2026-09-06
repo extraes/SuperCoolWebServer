@@ -34,7 +34,10 @@ public class RedirectController : Controller
     {
         if (string.IsNullOrEmpty(lnkName) || lnkName.Any(c => c == '/' || c == '\\'))
             return BadRequest();
-
+        
+        if (!Uri.TryCreate(target, UriKind.Absolute, out var uri) || uri.Scheme is not "https")
+            return BadRequest("Target must be an HTTPS link!");
+        
         var existed = PersistentData.values.links.TryGetValue(lnkName, out var oldTarget);
         PersistentData.values.links[lnkName] = target;
         PersistentData.WritePersistentData();

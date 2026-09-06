@@ -76,6 +76,15 @@
             AfTokens = tokens
         }));
     }
+    
+    @if (user.Permissions.HasFlag(Permissions.ManageLinks))
+    {
+        Write(await Html.RenderComponentAsync<Links>(RenderMode.Static, new
+        {
+            User = user,
+            AfTokens = tokens
+        }));
+    }
 
 </div>
 

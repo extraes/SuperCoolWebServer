@@ -11,16 +11,14 @@ namespace SuperCoolWebServer.Controllers;
 [Route("cobalt/[action]")]
 public class CobaltController : Controller
 {
-    [ThreadStatic]
-    private static HttpClient? client;
-
-    static HttpClient Client
+    [field: ThreadStatic]
+    private static HttpClient Client
     {
         get
         {
-            client ??= new HttpClient();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-            return client;
+            field ??= new HttpClient();
+            field.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            return field;
         }
     }
 
