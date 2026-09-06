@@ -1,0 +1,22 @@
+@using Microsoft.AspNetCore.Antiforgery
+@code {
+    [Parameter] public required AntiforgeryTokenSet Tokens { get; init; }
+
+    public string buttonText = "Not you? Log out";
+}
+
+<button class="button-slim ds-red-50" onclick="logOut()">@buttonText</button>
+
+<script>
+    async function logOut() {
+        let result = await fetch(`auth/logout`, {
+            method: "POST",
+            headers: {
+                "@Tokens.HeaderName": "@Tokens.RequestToken"
+            },
+        });
+
+        if (result.ok)
+            window.location.reload();
+    }
+</script>
