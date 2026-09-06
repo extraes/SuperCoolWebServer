@@ -4,7 +4,7 @@ export class Links {
     static extraHeaders = {};
     
     static setLink() {
-        return withErrorHandling(() => this.setLinkImpl(), $("#set-link-result"), $("#set-link-btn"));
+        return withErrorHandling(() => this.setLinkImpl(), $("#set-link-output"), $("#set-link-btn"));
     }
     
     static async setLinkImpl() {

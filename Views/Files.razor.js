@@ -70,7 +70,7 @@ export class Files {
         }
         else
         {
-            blinkDsButton(btn);
+            blinkDsButton(button);
             errElement.text(`HTTP ${result.status} (${result.statusText}) error: ${await result.text()}`)
             
             errElement.show();
