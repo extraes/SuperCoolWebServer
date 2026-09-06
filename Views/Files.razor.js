@@ -1,5 +1,4 @@
-import { withErrorHandling } from "/frontend/js/Utils.js";
-
+import {blinkDsButton, removeDsColors, withErrorHandling} from "../frontend/js/Utils.js";
 
 export class Files {
     static oldestFirst = false;
@@ -25,24 +24,28 @@ export class Files {
     }
     
     static async getFilesImpl() {
+        let button = $("#file-list-search");
         let errElement = $("#file-list-err");
         let resultElement = $("#file-list-results");
         let filter = $("#file-list-filter");
         let filterStr = filter.val()?.trim() || "*";
-
+        
         let reqHeaders = { };
         reqHeaders = Object.assign(reqHeaders, this.extraHeaders);
 
 
         errElement.empty().hide();
         resultElement.empty().hide();
+        removeDsColors(button)
         let result = await fetch(`/api/files/list/${encodeURIComponent(filterStr)}?oldestFirst=${this.oldestFirst}`, {
             method: "GET",
             headers: reqHeaders
         });
 
+        
         if (result.ok)
         {
+            button.addClass("ds-green");
             let json = await result.json();
             let items = json["items"];
             let total = json["total"];
@@ -67,6 +70,7 @@ export class Files {
         }
         else
         {
+            blinkDsButton(btn);
             errElement.text(`HTTP ${result.status} (${result.statusText}) error: ${await result.text()}`)
             
             errElement.show();

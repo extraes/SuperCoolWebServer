@@ -7,117 +7,43 @@
 }
 
 <script type="module">
-    import { Links } from "/Views/Links.razor.js";
+    import { Links } from "../Views/Links.razor.js";
 
     Links.extraHeaders["@AfTokens.HeaderName"] = "@AfTokens.RequestToken";
     window.Links = Links;
 </script>
 <div class="pictochat-message">
-    <header class="ds-slate-50">Links</header>
+    <header class="ds-blue-50">Links</header>
     <div style="display: grid;">
         <details style="justify-self: center;">
-            <summary class="ds-green-50">Create user</summary>
+            <summary class="ds-blue-50">Create shortened link</summary>
             <div class="ds-repeating">
-                <label>
-                    <span class="ds-div">Username</span>
-                    <div class="input-wrapper">
-                        <div class="input-before"></div>
-                        <input id="create-user-username" type="text" />
-                        <div class="input-after"></div>
-                    </div>
-                </label>
-                
-                <span class="ds-div">Permissions</span>
-                <div class="permission-selector">
-                    @foreach (Permissions perm in Enum.GetValues<Permissions>())
-                    {
-                        if (perm == Permissions.None)
-                            continue; // lol
-                        
-                        <button
-                            class="create-user-permission-button ds-red" value="@((long)perm)"
-                            onclick="Links.createUserTogglePermission(@((long)perm))">
-                            @perm.ToString()
-                        </button>
-                    }
-                </div>
-
-                <button id="create-user-button" onclick="Links.createUser()">Create user</button>
-                
-                <div class="alert" style="display:none;">
-                    <span id="create-user-result"></span>
-                </div>
-                
-            </div>
-        </details>
-        
-        <details style="justify-self: center;">
-            <summary class="ds-green-50">Find user</summary>
-            <div class="ds-repeating">
-                
-                <!--suppress JSDeprecatedSymbols -->
-                <form onsubmit="event.preventDefault(); Links.findUserByName()">
-                    <label>
-                        <span class="ds-div">Username</span>
-                        <div class="input-wrapper">
-                            <div class="input-before"></div>
-                            <input id="find-user-username" type="text" />
-                            <div class="input-after"></div>
-
-                            <button id="find-user-name-btn" type="submit" class="button-square" >></button>
-                        </div>
-                    </label>
-                </form>
-
 
                 <!--suppress JSDeprecatedSymbols -->
-                <form onsubmit="event.preventDefault(); Links.findUserById()">
+                <form onsubmit="event.preventDefault(); Links.setLink();">
                     <label>
-                        <span class="ds-div">Number ID</span>
+                        <span class="ds-div">Link name (what you want to call it)</span>
                         <div class="input-wrapper">
                             <div class="input-before"></div>
-                            <input id="find-user-id" type="text"/>
+                            <input id="set-link-name" type="text"/>
                             <div class="input-after"></div>
-
-                            <button id="find-user-id-btn" type="submit" class="button-square">></button>
                         </div>
                     </label>
+                    
+                    <label>
+                        <span class="ds-div">Link target (where you want it to go)</span>
+                        <div class="input-wrapper">
+                            <div class="input-before"></div>
+                            <input id="set-link-target" type="text"/>
+                            <div class="input-after"></div>
+                        </div>
+                    </label>
+                    
+                    <button id="set-link-btn" type="submit">Set redirect</button>
                 </form>
 
                 <div class="alert" style="display:none;">
-                    <span id="find-user-result"></span>
-                </div>
-            </div>
-        </details>
-        
-        <details style="justify-self: center;">
-            <summary class="ds-green-50">Set user's password</summary>
-            <div class="ds-repeating">
-                <!--suppress JSDeprecatedSymbols -->
-                <form onsubmit="event.preventDefault(); Links.findUserById()">
-                    <label>
-                        <span class="ds-div">User's ID</span>
-                        <div class="input-wrapper">
-                            <div class="input-before"></div>
-                            <input id="set-pwd-id" type="text"/>
-                            <div class="input-after"></div>
-                        </div>
-                    </label>
-
-                    <label>
-                        <span class="ds-div">New password</span>
-                        <div class="input-wrapper">
-                            <div class="input-before"></div>
-                            <input id="set-pwd-password" type="text"/>
-                            <div class="input-after"></div>
-                        </div>
-                    </label>
-
-                    <button id="set-pwd-btn" type="submit">Set password</button>
-                </form>
-
-                <div class="alert" style="display:none;">
-                    <span id="set-pwd-result"></span>
+                    <span id="set-link-output"></span>
                 </div>
             </div>
         </details>
