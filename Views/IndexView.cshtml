@@ -48,6 +48,168 @@
     <div class="pictochat-message">
         <header class="ds-darkpurple-50">extraes</header>
         <span>
+            I haven't made a proper portfolio page yet, but you can check out <a href="https://github.com/extraes">my GitHub</a>
+            if you're curious about what I've made in the past. Some highlights include...
+        </span>
+    </div>
+    
+    
+    <div class="pictochat-message">
+        <header class="ds-orange-50">Embedded Projects</header>
+
+        
+        <div class="pictochat-message">
+            <header class="ds-red-50">Unnamed IR Thing</header>
+            Unnamed IR Thing: Still a heavy WIP. My AC unit doesn't have a WiFi or Bluetooth interface,
+            only infrared, but I want to control it via HomeAssistant, so I'm making a
+            Raspberry Pi Pico W host a webserver that I can have HA ping to change the temperature/mode.
+            <br/>
+            So far, I've gotten written an embedded C program mimics my AC unit's remote, and I've
+            gotten an HTTP server working, I just need to map HTTP requests to NEC IR commands, make a
+            housing for it, and set it up in HA.
+            <br/>- Making during my fourth year of college.
+        </div>
+        
+        
+        <div class="pictochat-message">
+            <header class="ds-yellow-50">Liveclip</header>
+            A Raspberry Pi Zero 2W creating a timelapse and acting as real-life shadowplay,
+            controlled by a Pico W.
+            <br/>
+            Later, due to lack of C bindings for Libcamera, unfamiliarity with media handling, and curiosity
+            about agentic development tools, an AI-written remake of this called "ReplayPi" became my test
+            project for new models, with GPT-5.5, GPT-5.6 Sol and GPT-6 Astra getting a crack at it.
+            <br/>- Made throughout college.
+        </div>
+    </div>
+    
+    <div class="pictochat-message">
+        <header class="ds-green-50">Non-Programming Projects</header>
+        
+        <div class="pictochat-message">
+            <header class="ds-yellow-50">Sewing/embroidery/textiles</header>
+            
+            <ul>
+                <li>
+                    Being involved in a very craft-forward community and being a college student has meant that
+                    I've become very familiar with sewing, both with a machine and by hand.
+                </li>
+                <li>
+                    A family friend gave me a Brother sewing & embroidery machine, so I eventually learned how
+                    to use that, and I've embroidered a couple things so far, taking existing designs and making
+                    them more suitable for embroidering.
+                </li>
+                <li>
+                    I saw a bag I liked online, but I didn't want to wait for it to ship and didn't feel like
+                    spending the $110 on it, so I designed a clone pattern in Inkscape and used my family's Cricut
+                    to cut out the pattern, then I transferred it onto fabric and sewed the bag together.
+                    
+                    <br/>
+                    <span style="font-size: smaller">
+                        That first iteration of the bag was too small for my laptop, so I need to redo it with
+                        larger panels, but it's a good learning experience!
+                    </span>
+                </li>
+            </ul>
+        </div>
+        
+        <div class="pictochat-message">
+            <header class="ds-teal-50">3D Printing</header>
+            <para>
+                I have an Ender 3 Pro (I know) with a silent stepper driver mainboard (BTT SKR Mini E3 v2.0) with
+                a custom firmware (obviously), with a BLTouch knockoff and direct-drive extruder installed. It works well!
+            </para>
+            <para>
+                I've mostly printed preexisting files, like a PETG costume base that I then lined with fabric myself,
+                however I'm in the beginning stages of learning CAD, which I used to design a puck for the bottom of my
+                water bottle that fits an airtag.
+                <br/>
+                <span style="font-size: smaller">
+                    I would later find out this was something that already existed,
+                    but it was a great learning opportunity (and as far as I could tell, the other available STLs
+                    didn't let air escape through the boot so mine is still better!)
+                </span>
+            </para>
+        </div>
+        
+    </div>
+    
+    <div class="pictochat-message">
+        <header class="ds-magenta-50">Discord Bots</header>
+        
+        <div class="pictochat-message">
+            <header class="ds-fuschia-50"><a href="https://github.com/extraes/BoneBoard">BoneBoard/Stargrid</a></header>
+            A for-fun Discord bot made for the BONELAB fan-run Discord server.
+            It has various different modules to do things from making sure messages are all about
+            a random Wikipedia topic, to generating quote images of funny things members say, to
+            gambling with arbitrary valueless points with <i>absolutely</i> not casino-grade slot or
+            blackjack commands.
+            <br/>- Made throughout college.
+        </div>
+        
+        
+        <div class="pictochat-message">
+            <header class="ds-turquoise-50"><a href="https://github.com/camobiwon/Voidway-Bot">Voidway Bot</a></header>
+            A for-serious Discord bot made for the BONELAB community.
+            It watches for new UGC uploads for BONELAB and announces them for the community, and scans
+            mod files for incomplete/malformed/malicious files, to be reviewed by human moderators.
+            It also contains a lot of more standard moderation utilities, like echoing moderation
+            actions in a channel so they're more visible to other moderators, with everything
+            configurable per-server.
+            <br/>- Made throughout college.
+        </div>
+    </div>
+
+    
+    <div class="pictochat-message">
+        <header class="ds-lime-50">Game Modding</header>
+        <span>
+            Most of these projects required <b>significant reverse engineering effort</b>, as documentation
+            was obviously missing, and using certain language features in the wrong way would cause an
+            <i>instant error-less crash</i>. They also required an eye for optimization, as games have a
+            tight frametime budget, and in a VR game, lag can <b>cause someone to throw up</b>.
+        </span>
+        <ul>
+            <li><a href="https://thunderstore.io/c/lethal-company/p/extraes/LethalLoudnessMeter/">LethalLoudnessMeter</a>:
+                a simple mod that just shows how loud you're being. It got 700,000+ downloads.
+                <br/>- Made in my first year of college.
+            </li>
+
+            <li><a href="https://github.com/extraes/SceneSaverBL">SceneSaverBL</a>:
+                asynchronous saving & loading of game objects (read: GMod dupes), made with special
+                consideration for performance and small filesize, using custom de/serialization routines
+                instead of an off-the-shelf format like JSON. This also required
+                <a href="https://github.com/BepInEx/Il2CppInterop/pull/133">modifying the proxy code
+                    generator</a> to allow mods to interop with the base game's async code.
+                <br/>- Made through college, started as a senior in HS.
+            </li>
+
+
+            <li><a href="https://thunderstore.io/c/boneworks/p/extraes/SepticSurvival/">Septic Survival</a>:
+                the second BONEWORKS custom map that let NPCs better navigate the map to reach the player.
+                The map's layout is entirely original, with assets taken from the base game. I bought an RTX
+                card so I could make the light-baking process faster and so I could preview the lighting.
+                <br/>- Made as a senior in HS.
+            </li>
+            <li><a href="https://thunderstore.io/c/boneworks/p/extraes/ZW_Bank/">ZW_Bank</a>:
+                the first BONEWORKS custom map that hooked into the game's zombie navigation code and let
+                NPCs climb over obstacles, jump gaps, and take ziplines to reach the player.
+                The map geometry is a port of a CS:GO map, but modifications were made for optimization and
+                I had to re-light the map in Unity.
+                <br/>- Made as a senior in HS.
+            </li>
+
+            <li><a href="https://github.com/extraes/BW-Chaos">BW Chaos</a> (and an unpublished BONELAB port):
+                A collection of effects that mess with the VR Game "BONEWORKS," with Twitch and Discord
+                support, so a live audience can influence the game.
+                <br/>- Made as a sophomore and junior in HS.
+            </li>
+        </ul>
+    </div>
+    
+    <div class="pictochat-message">
+        <header class="ds-darkpurple-50">extraes</header>
+        <span>
             Anyways, thanks for checking out what I've got here! 
         </span>
     </div>
@@ -74,8 +236,6 @@
             {
                 <div>
                     <span>Welcome back @user.UserName  :3</span>
-                    
-                    
                     @{
                         Write(await Html.RenderComponentAsync<LogoutButton>(RenderMode.Static, new
                         {
