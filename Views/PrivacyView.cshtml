@@ -1,0 +1,424 @@
+@page
+@model SuperCoolWebServer.Views.PrivacyView
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+
+
+<html lang="en">
+
+<head>
+    <title>Privacy Policies</title>
+    <meta name="darkreader-lock">
+
+    <!--suppress JSUnresolvedLibraryURL -->
+    <link href="https://unpkg.com/@@spiritov/ds.css" rel="stylesheet"/>
+    <link href="/frontend/styles/main.css" rel="stylesheet"/>
+    
+    <script src="https://unpkg.com/jquery@4.0.0/dist/jquery.min.js"></script>
+</head>
+
+<body class="ds-grid">
+<div class="pictochat-window">
+    <div class="pictochat-status">Privacy Policies</div>
+    
+    <div class="pictochat-message">
+        <header class="ds-darkpurple-50">extraes</header>
+        These privacy policies only apply to official deployments of bots that I, extraes, personally maintain.
+        <br/>
+        Given the fact that my bots are open source, anyone could reasonably host their own instance(s) of these bots,
+        and modify them to their hearts content -- I have no control over that.
+        
+        <h2>
+            See the privacy policies for <b><a href="#boneboard-privacy">BoneBoard (AKA Stargrid)</a></b> and
+            <b><a href="#voidway-privacy">Voidway Bot</a></b>.
+        </h2>
+        
+        
+        Given the often burst-y nature of my development of these bots, as they're worked on solely in my free time,
+        <b>these privacy policies may fall out of date</b>. You can see how out of date they are by comparing their
+        effective dates to their recent commits on their GitHub repositories, however I will do my level best to keep
+        them up-to-date.
+        <br/>
+        
+        
+    </div>
+    
+    <div class="pictochat-message">
+        <header class="ds-blue-50" id="boneboard-privacy">BoneBoard</header>
+        
+        <para>
+            This policy, <b>effective September 15, 2026</b>, applies to the <b>official deployment of BoneBoard</b>,
+            named "Stargrid" with the Discord bot user ID of <c>1153609385646489610</c>,
+            typically operating in the fan-run BONELAB Discord server, with the server ID of <c>563139253542846474</c>.
+            <br/>
+            If you interact with any other instance of BoneBoard, the operator of that instance is responsible for
+            its data practices, and this policy does not necessarily apply.
+        </para>
+        
+        <hr/>
+        <para>
+            BoneBoard is an open-source community Discord bot primarily developed for the fan-run BONELAB Discord server.
+            Its source code is <a href="https://github.com/extraes/BoneBoard">available on its GitHub</a>.
+            The official deployment never runs any uncommitted/unpushed code, as it pulls directly from GitHub when
+            the update & relaunch command is invoked.
+        </para>
+        
+        <hr/>
+        <h3>Information BoneBoard Processes</h3>
+        <ul>
+            <li>
+                Discord user IDs, usernames, display names, avatars, roles,
+                and other basic account or server information;
+            </li>
+
+            <li>Discord server, channel, thread, message, interaction, and reaction IDs;</li>
+
+            <li>Message content and message metadata;</li>
+
+            <li>Message attachments and other media;</li>
+
+            <li>Reactions and command interactions;</li>
+
+            <li>
+                Information generated through BoneBoard features, such as game scores, leaderboard information,
+                submissions, votes, cooldowns, and feature state.
+            </li>
+        </ul>
+        
+        <para>
+            This information can be limited on-the-fly by server operators by removing permissions from the bot user,
+            as well as by using Discord's built-in command permission system to prevent users from invoking the commands.
+        </para>
+        
+        <hr/>
+        <h3>How Information Is Used</h3>
+        BoneBoard processes information as necessary to provide its features and operate the bot. This includes, for example:
+        <ul>
+            <li>responding to commands and interactions;</li>
+
+            <li>moderating or enforcing channel-specific rules;</li>
+
+            <li>creating quotes or images from Discord messages;</li>
+
+            <li>maintaining games, leaderboards, polls, contests, and similar community features;</li>
+
+            <li>temporarily buffering messages or attachments where that feature is enabled;</li>
+
+            <li>operating the confession feature;</li>
+
+            <li>determining reactions, votes, or other community interactions;</li>
+
+            <li>diagnosing errors and maintaining the bot, and</li>
+
+            <li>preventing abuse or misuse of the bot.</li>
+        </ul>
+            
+        BoneBoard does not use collected information for advertising or sell personal information. <br/>
+        Any features that route through an OpenAI-compatible API have the traffic routed through API keys generated
+        by accounts with "training on inputs" (or any other comparable option) disabled.
+        
+        <hr/>
+        <h3>Logs</h3>
+        
+        Logs may contain information such as:
+        <ul>
+            <li>Discord usernames or user IDs;</li>
+
+            <li>message, channel, or server identifiers;</li>
+
+            <li>message content where relevant to the logged event;</li>
+
+            <li>command information;</li>
+
+            <li>error and diagnostic information; and</li>
+
+            <li>information relating to actions performed by BoneBoard.</li>
+        </ul>
+        
+        Logs are not publicly accessible, and there is a limited number stored at any time, with older logs being
+        automatically deleted on startup.
+        
+        <hr/>
+        <h3>Confessions</h3>
+
+        BoneBoard includes a feature that allows users to submit "confessions" without
+        publicly displaying the sender's identity.
+        <br/>
+        <b>A confession should not be considered anonymous from the BoneBoard operator</b>, as operational logs contain
+        information that can be used by the operator to ascertain which Discord account submitted any given confession.
+        <br/>
+        In the case of the official deployment, if a confession is deemed to have violated the server's rules:
+        I, extraes, will review the operational logs to find who sent the offending confession, and send them a message
+        appropriate to the situation.
+        <br/>
+        Other ordinary members are not provided this identifying information through the confession feature, although
+        repeated misuses may result in a publicly visible disciplinary action being taken, or moderators being informed.
+        <br/>
+        BoneBoard will store the confession text and timestamp, and in the case of the official deployment,
+        this confession text can be used to fine-tune a large language model at any time. Before text is sent to
+        be used as fine-tuning data, whole entries will be filtered out that are deemed to be undesirable or exceedingly
+        personal, lustful, sexual, angry. This fine-tuning will take place on a reputable platform under an account that
+        has "training on inputs" (or any other equivalent) disabled.
+        <br/>
+        If someone chooses the AI rewriting option for a confession, the text of their confession is also sent to the
+        configured AI service so that a rewritten version can be generated.
+        They are shown the rewritten version before choosing whether to submit it or re-attempt rewriting.
+        
+        <hr/>
+        <h3>Artificial Intelligence Services</h3>
+        Some BoneBoard features use an OpenAI-compatible artificial intelligence service.
+        Depending on the bot's configuration, this may be OpenAI or another compatible service selected by the operator.
+        <br/>
+        When one of these features is used, relevant content may be transmitted to that service for processing.
+        Depending on the feature, this may include:
+
+        <ul>
+            <li>the text of a confession submitted for rewriting;</li>
+
+            <li>message text being evaluated by an AI-assisted moderation feature;</li>
+
+            <li>text being evaluated for formatting or content requirements; and</li>
+
+            <li>contextual information necessary to perform the requested analysis.</li>
+        </ul>
+        
+        Information sent to a third-party AI provider is subject to that provider's own privacy and data-handling
+        practices. The official deployment will always be used with accounts that have "training on inputs" disabled.
+        <br/>
+        BoneBoard does not intentionally send unrelated Discord conversations to an AI provider merely because the bot
+        is present in a server.
+        
+        <hr/>
+        <h3>Message Buffering & Attachments</h3>
+
+        Some channels may use BoneBoard's message-buffering functionality.
+        When enabled, BoneBoard may temporarily retain message content and download copies of message attachments
+        so that the messages can later be reposted. These temporary attachment files are deleted by BoneBoard after
+        they are reposted during normal operation.
+        <br/>
+        Messages processed through this feature may also appear in operational logs.
+
+        <hr/>
+        <h3>Discord</h3>
+        BoneBoard operates through Discord and necessarily exchanges information with Discord in order to function.
+        <br/>
+        Your use of Discord itself is governed separately by Discord's privacy policy and terms. BoneBoard does not
+        control Discord's collection, storage, or processing of information.
+        
+        <hr/>
+        <h3>Information Sharing</h3>
+        Neither the BoneBoard program nor myself sell personal information.
+        Information may be shared only where reasonably necessary to operate the bot, including:
+        <ul>
+            <li>with Discord as part of normal Discord bot operation;</li>
+
+            <li>with a configured AI service when an AI-backed feature requires it;</li>
+
+            <li>
+                with the BoneBoard operator or administrators where necessary for maintenance, moderation,
+                debugging, or abuse prevention; or
+            </li>
+            
+            <li>when required by applicable law (if that should ever be the case).</li>
+        </ul>
+        
+        Information deliberately posted by BoneBoard into a public or member-accessible Discord channel,
+        such as a quote, leaderboard entry, game result, or contest submission, will naturally be visible to users
+        who can access that channel.
+        <br/>
+        Note that an AI-backed feature does not necessarily require the user to invoke a command or interact with
+        something explicitly highlighting its AI usage, but exact code paths can be ascertained by reading source code.
+        Examples of this include, but may not be limited to: Haikus and Wiki Topic assessments.
+        
+        <hr/>
+        <h3>Data Removal/Privacy Requests</h3>
+        If you would like to request removal of information stored by the official BoneBoard instance,
+        contact the BoneBoard operator (me, extraes).
+        <br/>
+        Some information may no longer be independently stored by BoneBoard but may remain as part of messages or
+        other content stored by Discord. Removal of information from BoneBoard does not necessarily remove corresponding
+        information from Discord.
+        <br/>
+        Certain information may also need to be retained temporarily where reasonably necessary for security,
+        moderation, abuse prevention, or legal obligations.
+        
+        <hr/>
+        <h3>Contact</h3>
+        <ul>
+            <li>
+                <b>Discord:</b>
+                @@extraes (User ID 261631460727980033).
+                <span style="font-size: smaller">
+                    You can find me in the <a href="https://discord.gg/mjmpUR8">BONELAB community server</a>.
+                </span>
+            </li>
+            
+            <li><b>Email:</b> <a href="mailto:talkto@extraes.xyz">talkto@extraes.xyz</a></li>
+        </ul>
+    </div>
+    
+    <div class="pictochat-message">
+        <header class="ds-darkpurple-50" id="voidway-privacy">Voidway Bot</header>
+        <para>
+            This policy, <b>effective November 12, 2026</b>, applies to the <b>official deployment of Voidway Bot</b>
+            maintained by me, extraes, for BONELAB-related communities.
+            <br/>
+            If you interact with another instance of Voidway Bot, the operator of that instance is responsible for
+            its data practices, and this policy does not necessarily apply.
+        </para>
+
+        <hr/>
+        <para>
+            Voidway Bot is an open-source Discord bot providing moderation tools and information about BONELAB mods.
+            Its source code is <a href="https://github.com/extraes/Voidway-Bot">available on its GitHub</a>.
+            The features used in a particular server depend on the bot's configuration and permissions.
+        </para>
+
+        <hr/>
+        <h3>Information Voidway Bot Processes</h3>
+        <ul>
+            <li>Discord user IDs, usernames, display names, avatars, nicknames, roles, and basic account or server information;</li>
+            <li>Discord server, channel, thread, message, interaction, and audit log identifiers;</li>
+            <li>Message content, timestamps, attachments, and other message metadata;</li>
+            <li>Commands, button interactions, and information entered into forms, including moderation reasons and notes;</li>
+            <li>Moderation actions, the accounts involved, and daily counts of messages observed from individual users;</li>
+            <li>
+                Information obtained from mod.io, including mod and file identifiers, names, descriptions, tags,
+                uploader profiles, comments, upload metadata, and downloadable mod files; and
+            </li>
+            <li>Scan results, file hashes, mod barcodes, uploader associations, and other feature state.</li>
+        </ul>
+        Server operators can limit the Discord information available to the bot by changing its permissions and
+        configuration. Discord's built-in command permissions can also restrict who can invoke commands.
+        Restricting commands does not by itself stop background features such as message logging or activity tracking.
+
+        <hr/>
+        <h3>How Information Is Used</h3>
+        Voidway Bot processes information to provide its features and operate the bot. This includes, for example:
+        <ul>
+            <li>responding to commands and providing thread-owner controls;</li>
+            <li>carrying out moderation actions and notifying affected users;</li>
+            <li>filtering game invites, adjusting nicknames, and operating honeypot channels to discourage abuse;</li>
+            <li>recording message edits and deletions, and forwarding Discord audit log events;</li>
+            <li>maintaining moderator notes and summaries of recent activity and moderation history;</li>
+            <li>announcing new or updated mod.io uploads;</li>
+            <li>checking mod files for malformed uploads, potentially dangerous content, or possible reuploads;</li>
+            <li>flagging potentially inappropriate mod.io comments for moderator review; and</li>
+            <li>diagnosing errors, maintaining the bot, and preventing abuse.</li>
+        </ul>
+        Voidway Bot does not use collected information for advertising or sell personal information.
+
+        <hr/>
+        <h3>Message Logging &amp; Attachments</h3>
+        Where message logging is configured, Voidway Bot may copy edited or deleted messages into a configured Discord
+        log channel. These records may include the original and updated text where available, the author's identity,
+        the original channel and timestamp, and message identifiers.
+        <br/>
+        The bot may also download and re-upload available attachments, or include links to them, in the log channel.
+        <b>Editing or deleting the original message does not necessarily remove the copy made by Voidway Bot.</b>
+        Copies are visible to anyone with access to the destination channel, as determined by that server's permissions.
+        Logging depends on the information Discord makes available, so some original content or attachments may be unavailable.
+
+        <hr/>
+        <h3>Moderation Notes &amp; Activity History</h3>
+        Voidway Bot can store moderator-written notes about members as messages in a configured Discord channel,
+        and retain the server, member, and note-message identifiers needed to retrieve them.
+        Moderation records may include reasons, the affected member, and the moderator responsible.
+        <br/>
+        The bot also maintains daily per-user message counts and records of certain moderation actions, used to
+        provide recent-history summaries. These counts record how many messages were observed, rather than storing
+        their full text in the activity counter itself. Message text may separately be retained by logging features.
+        <br/>
+        Activity history is designed to cover the last 31 days. Entries dated 31 or more days ago are removed when
+        cleanup runs during normal tracking or history retrieval; this is not a timed deletion guarantee.
+        This cleanup does not delete moderator notes, operational logs, or messages already posted to Discord.
+
+        <hr/>
+        <h3>mod.io &amp; Mod File Scanning</h3>
+        Voidway Bot retrieves BONELAB mod information, comments, and mod files through mod.io and its download services.
+        It may download and inspect archives and Unity asset bundles to identify suspicious filenames, file structures,
+        objects, events, or other content, and to help identify possible reuploads.
+        <br/>
+        The bot maintains a persistent catalog that can associate file hashes and mod barcodes with uploader profile
+        identifiers, as well as processed file IDs, trusted-modder identifiers, and operator-maintained scanning rules.
+        This catalog is separate from the 31-day Discord activity history and has no automatic age-based expiry.
+        <br/>
+        Announcements and scan reports may be posted into configured Discord channels. Reports may include uploader
+        information, filenames, extracted asset information, and downloadable text reports.
+        The bot's findings are automated indicators for review and may be incorrect.
+
+        <hr/>
+        <h3>Artificial Intelligence Services</h3>
+        When configured with an OpenAI API key, Voidway Bot automatically sends the text of newly observed mod.io
+        comments to OpenAI's moderation service to check for potentially inappropriate content.
+        <b>This can happen without the comment author invoking a Discord command or interacting with the bot.</b>
+        <br/>
+        Flagged comments may be reported to configured Discord channels together with the author's mod.io profile,
+        the relevant mod, an excerpt of the comment, and the categories and scores returned by the service.
+        Comment excerpts and moderation results may also appear in operational logs.
+        <br/>
+        Information sent to OpenAI is subject to that service's own privacy and data-handling practices.
+        The comment-checking feature sends the comment text for classification; it does not require sending unrelated
+        Discord conversations or downloaded mod files to OpenAI.
+
+        <hr/>
+        <h3>Logs &amp; Storage</h3>
+        Operational logs may contain usernames and account identifiers, server and channel information, command
+        details, moderation reasons, message or comment content relevant to an event, scan results, and diagnostic errors.
+        They are intended for the operator's maintenance and debugging use, rather than public access.
+        <br/>
+        The bot limits the number of local log files according to its configuration and deletes older files on startup.
+        This is a file-count limit, rather than a fixed retention period.
+        <br/>
+        Server configuration, moderator-note references, and mod-scanning catalogs may remain stored until changed
+        or removed. Messages and attachments posted into Discord, including moderation logs, notes, and scan reports,
+        remain there until removed separately. Leaving a server does not automatically erase these records.
+
+        <hr/>
+        <h3>Information Sharing</h3>
+        Neither the Voidway Bot program nor myself sell personal information.
+        Information may be shared where reasonably necessary to operate the bot, including:
+        <ul>
+            <li>with Discord as part of normal bot operation;</li>
+            <li>with mod.io and its download services when retrieving mod information, comments, or files;</li>
+            <li>with OpenAI when the comment-moderation feature is enabled;</li>
+            <li>with the bot operator or server moderators for maintenance, moderation, debugging, or abuse prevention; or</li>
+            <li>when required by applicable law (if that should ever be the case).</li>
+        </ul>
+        Information posted into Discord is visible to whoever can access the destination channel. Depending on server
+        configuration, this may include ordinary members, moderators, or people in multiple servers receiving the same
+        mod.io announcement or report.
+        <br/>
+        Discord, mod.io, and OpenAI each have their own privacy and data-handling practices, which Voidway Bot does not control.
+
+        <hr/>
+        <h3>Data Removal/Privacy Requests</h3>
+        If you would like to request removal of information stored by the official Voidway Bot instance,
+        contact the operator (me, extraes). For server-specific moderator notes or log-channel messages,
+        the relevant server's moderators may also need to be involved.
+        <br/>
+        Removing information from the bot's local storage does not necessarily remove corresponding messages or
+        attachments from Discord, the original content on mod.io, or information already processed by another service.
+        Certain information may need to be retained temporarily where reasonably necessary for security,
+        moderation, abuse prevention, or legal obligations.
+
+        <hr/>
+        <h3>Contact</h3>
+        <ul>
+            <li>
+                <b>Discord:</b>
+                @@extraes (User ID 261631460727980033).
+                <span style="font-size: smaller">
+                    You can find me in the <a href="https://discord.gg/mjmpUR8">BONELAB community server</a>.
+                </span>
+            </li>
+            <li><b>Email:</b> <a href="mailto:talkto@extraes.xyz">talkto@extraes.xyz</a></li>
+        </ul>
+    </div>
+</div>
+</body>
+</html>
