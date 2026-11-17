@@ -5,7 +5,7 @@ namespace SuperCoolWebServer.Controllers;
 
 [ApiExplorerSettings(IgnoreApi = true)]
 [Route("/")]
-public class HomeController : Controller
+public class ViewController : Controller
 {
     public IActionResult Index()
     {
@@ -17,5 +17,17 @@ public class HomeController : Controller
     public IActionResult Dashboard()
     {
         return View("/Views/DashboardView.cshtml");
+    }
+
+    [Route("terms")]
+    public IActionResult Terms()
+    {
+        return View("/Views/TermsView.cshtml");
+    }
+
+    [Route("privacy")]
+    public IActionResult Privacy()
+    {
+        return View("/Views/PrivacyView.cshtml");
     }
 }

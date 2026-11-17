@@ -20,8 +20,11 @@ public class YtDlpController : Controller
     {
         get
         {
-            client ??= new HttpClient();
-            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            if (client is null)
+            {
+                client = new HttpClient();
+                client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+            }
             return client;
         }
     }
@@ -30,9 +33,76 @@ public class YtDlpController : Controller
     {
         get
         {
-            ytdlClient ??= new YoutubeDL();
+            ytdlClient ??= new YoutubeDL
+            {
+                YoutubeDLPath = YtDlpPath,
+                FFmpegPath = FFmpegPath,
+            };
             return ytdlClient;
         }
+    }
+
+    // YoutubeDLSharp downloads into the CWD by default; resolve absolute paths so readiness checks and execution agree.
+    static readonly string YtDlpPath = Path.Combine(Directory.GetCurrentDirectory(), Utils.YtDlpBinaryName);
+    static readonly string FFmpegPath = Path.Combine(Directory.GetCurrentDirectory(), Utils.FfmpegBinaryName);
+    static readonly SemaphoreSlim provisionLock = new(1, 1);
+    static readonly TimeSpan provisionRetryCooldown = TimeSpan.FromMinutes(5);
+    static DateTime lastProvisionFailure = DateTime.MinValue;
+
+    /// <summary>
+    /// Makes sure the yt-dlp binary exists and is executable, downloading it if needed.
+    /// Safe to call concurrently; failed downloads are retried at most once per cooldown period.
+    /// </summary>
+    internal static async Task<bool> EnsureYtDlpAsync()
+    {
+        if (IsUsable(YtDlpPath))
+            return true;
+
+        await provisionLock.WaitAsync();
+        try
+        {
+            if (IsUsable(YtDlpPath))
+                return true;
+
+            if (!System.IO.File.Exists(YtDlpPath))
+            {
+                if (DateTime.UtcNow - lastProvisionFailure < provisionRetryCooldown)
+                    return false;
+
+                try
+                {
+                    await Utils.DownloadYtDlp(Directory.GetCurrentDirectory());
+                }
+                catch (Exception ex)
+                {
+                    lastProvisionFailure = DateTime.UtcNow;
+                    Logger.Warn("Failed to download yt-dlp!", ex);
+                    return false;
+                }
+            }
+
+            // YoutubeDLSharp doesn't set the execute bit on Unix.
+            if (!OperatingSystem.IsWindows())
+            {
+                System.IO.File.SetUnixFileMode(YtDlpPath, System.IO.File.GetUnixFileMode(YtDlpPath)
+                    | UnixFileMode.UserExecute | UnixFileMode.GroupExecute | UnixFileMode.OtherExecute);
+            }
+
+            return IsUsable(YtDlpPath);
+        }
+        finally
+        {
+            provisionLock.Release();
+        }
+    }
+
+    static bool IsUsable(string path)
+    {
+        if (!System.IO.File.Exists(path))
+            return false;
+        if (OperatingSystem.IsWindows())
+            return true;
+        return (System.IO.File.GetUnixFileMode(path) & UnixFileMode.UserExecute) != 0;
     }
 
     static Timer fileDeleteTimer;
@@ -91,6 +161,12 @@ public class YtDlpController : Controller
             Output = Path.GetTempFileName(), // gives me a full path in output & avoids unicode in filename
         };
         files.Add(options.Output); // to delete temp file lol
+        if (System.IO.File.Exists(FFmpegPath))
+            options.FfmpegLocation = FFmpegPath; // custom OptionSet bypasses YoutubeDL.FFmpegPath
+
+        if (!await EnsureYtDlpAsync())
+            return StatusCode(StatusCodes.Status503ServiceUnavailable, "yt-dlp is unavailable right now, try again later.");
+
         var res = await Ytdl.RunWithOptions(link, options, HttpContext.RequestAborted, output: destinationSetter);
         if (HttpContext.RequestAborted.IsCancellationRequested)
             return NoContent();

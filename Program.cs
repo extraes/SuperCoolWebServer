@@ -316,8 +316,19 @@ namespace SuperCoolWebServer
         static async Task InitAsync()
         {
             await SetCloudflareIpAsync();
-            await YoutubeDLSharp.Utils.DownloadFFmpeg();
-            await YoutubeDLSharp.Utils.DownloadYtDlp();
+            
+            try
+            {
+                await YoutubeDLSharp.Utils.DownloadFFmpeg();
+            }
+            catch (Exception ex)
+            {
+                Logger.Warn("Failed to download FFmpeg!", ex);
+            }
+
+            // logs its own failure; ytdlp/get retries provisioning on demand (with a cooldown) if this fails
+            await Controllers.YtDlpController.EnsureYtDlpAsync();
+            
         }
 
         static async Task SetCloudflareIpAsync()
