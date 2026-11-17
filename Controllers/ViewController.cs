@@ -19,6 +19,12 @@ public class ViewController : Controller
         return View("/Views/DashboardView.cshtml");
     }
 
+    [Route("terms")]
+    public IActionResult Terms()
+    {
+        return View("/Views/TermsView.cshtml");
+    }
+
     [Route("privacy")]
     public IActionResult Privacy()
     {
