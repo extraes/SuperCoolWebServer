@@ -320,12 +320,14 @@ namespace SuperCoolWebServer
             try
             {
                 await YoutubeDLSharp.Utils.DownloadFFmpeg();
-                await YoutubeDLSharp.Utils.DownloadYtDlp();
             }
             catch (Exception ex)
             {
-                Logger.Warn("Failed to download FFmpeg or YtDlp!", ex);
+                Logger.Warn("Failed to download FFmpeg!", ex);
             }
+
+            // logs its own failure; ytdlp/get retries provisioning on demand (with a cooldown) if this fails
+            await Controllers.YtDlpController.EnsureYtDlpAsync();
             
         }
 
